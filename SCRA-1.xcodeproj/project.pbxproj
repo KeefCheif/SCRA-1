@@ -11,6 +11,8 @@
 		D00291F7278419390045231C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00291F6278419390045231C /* ContentView.swift */; };
 		D00291F92784193A0045231C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00291F82784193A0045231C /* Assets.xcassets */; };
 		D00291FC2784193A0045231C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00291FB2784193A0045231C /* Preview Assets.xcassets */; };
+		D089E3E427D67C430075A0C4 /* GameBoardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3E327D67C430075A0C4 /* GameBoardViewModel.swift */; };
+		D089E3E627D67C710075A0C4 /* GameBoardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3E527D67C710075A0C4 /* GameBoardModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,8 @@
 		D00291F6278419390045231C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D00291F82784193A0045231C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D00291FB2784193A0045231C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D089E3E327D67C430075A0C4 /* GameBoardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardViewModel.swift; sourceTree = "<group>"; };
+		D089E3E527D67C710075A0C4 /* GameBoardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +55,8 @@
 		D00291F3278419390045231C /* SCRA-1 */ = {
 			isa = PBXGroup;
 			children = (
+				D089E3E227D67BFC0075A0C4 /* ViewModels */,
+				D089E3E127D67BF70075A0C4 /* Models */,
 				D00291F4278419390045231C /* SCRA_1App.swift */,
 				D00291F6278419390045231C /* ContentView.swift */,
 				D00291F82784193A0045231C /* Assets.xcassets */,
@@ -65,6 +71,22 @@
 				D00291FB2784193A0045231C /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		D089E3E127D67BF70075A0C4 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D089E3E527D67C710075A0C4 /* GameBoardModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D089E3E227D67BFC0075A0C4 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				D089E3E327D67C430075A0C4 /* GameBoardViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,6 +160,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D00291F7278419390045231C /* ContentView.swift in Sources */,
+				D089E3E427D67C430075A0C4 /* GameBoardViewModel.swift in Sources */,
+				D089E3E627D67C710075A0C4 /* GameBoardModel.swift in Sources */,
 				D00291F5278419390045231C /* SCRA_1App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
