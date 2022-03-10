@@ -16,6 +16,12 @@
 		D089E3ED27D67EC50075A0C4 /* GameBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3EC27D67EC50075A0C4 /* GameBoardView.swift */; };
 		D089E3EF27D67F260075A0C4 /* PlayerRackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3EE27D67F260075A0C4 /* PlayerRackView.swift */; };
 		D089E3F327D67FC20075A0C4 /* GameBoardModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3F227D67FC20075A0C4 /* GameBoardModifiers.swift */; };
+		D0D3C0B027DA9ECC0070A008 /* 2LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0AF27DA9ECC0070A008 /* 2LetterWords.json */; };
+		D0D3C0B227DA9F0F0070A008 /* 3LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B127DA9F0F0070A008 /* 3LetterWords.json */; };
+		D0D3C0B427DA9F2D0070A008 /* 4LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B327DA9F2D0070A008 /* 4LetterWords.json */; };
+		D0D3C0B627DA9F510070A008 /* 5LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B527DA9F510070A008 /* 5LetterWords.json */; };
+		D0D3C0B827DA9F740070A008 /* 6LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B727DA9F740070A008 /* 6LetterWords.json */; };
+		D0D3C0BA27DA9F9A0070A008 /* 7LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B927DA9F9A0070A008 /* 7LetterWords.json */; };
 		ED10A49832EDC43B102B03E8 /* Pods_SCRA_1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17738C3EC927924E15F2A1FF /* Pods_SCRA_1.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +39,12 @@
 		D089E3EC27D67EC50075A0C4 /* GameBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardView.swift; sourceTree = "<group>"; };
 		D089E3EE27D67F260075A0C4 /* PlayerRackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerRackView.swift; sourceTree = "<group>"; };
 		D089E3F227D67FC20075A0C4 /* GameBoardModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardModifiers.swift; sourceTree = "<group>"; };
+		D0D3C0AF27DA9ECC0070A008 /* 2LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 2LetterWords.json; sourceTree = "<group>"; };
+		D0D3C0B127DA9F0F0070A008 /* 3LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 3LetterWords.json; sourceTree = "<group>"; };
+		D0D3C0B327DA9F2D0070A008 /* 4LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 4LetterWords.json; sourceTree = "<group>"; };
+		D0D3C0B527DA9F510070A008 /* 5LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 5LetterWords.json; sourceTree = "<group>"; };
+		D0D3C0B727DA9F740070A008 /* 6LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 6LetterWords.json; sourceTree = "<group>"; };
+		D0D3C0B927DA9F9A0070A008 /* 7LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 7LetterWords.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,7 +65,6 @@
 				AD9F8AAA68F68FBB2221A4EA /* Pods-SCRA-1.debug.xcconfig */,
 				5FF88F73D515EF30A5C37660 /* Pods-SCRA-1.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -86,6 +97,7 @@
 		D00291F3278419390045231C /* SCRA-1 */ = {
 			isa = PBXGroup;
 			children = (
+				D0D3C0AE27DA9E8E0070A008 /* Dictionary */,
 				D089E3E727D67E540075A0C4 /* Views */,
 				D089E3E227D67BFC0075A0C4 /* ViewModels */,
 				D089E3E127D67BF70075A0C4 /* Models */,
@@ -155,6 +167,19 @@
 			path = Modifiers;
 			sourceTree = "<group>";
 		};
+		D0D3C0AE27DA9E8E0070A008 /* Dictionary */ = {
+			isa = PBXGroup;
+			children = (
+				D0D3C0AF27DA9ECC0070A008 /* 2LetterWords.json */,
+				D0D3C0B127DA9F0F0070A008 /* 3LetterWords.json */,
+				D0D3C0B327DA9F2D0070A008 /* 4LetterWords.json */,
+				D0D3C0B527DA9F510070A008 /* 5LetterWords.json */,
+				D0D3C0B727DA9F740070A008 /* 6LetterWords.json */,
+				D0D3C0B927DA9F9A0070A008 /* 7LetterWords.json */,
+			);
+			path = Dictionary;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -216,7 +241,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				D00291FC2784193A0045231C /* Preview Assets.xcassets in Resources */,
+				D0D3C0B627DA9F510070A008 /* 5LetterWords.json in Resources */,
+				D0D3C0B027DA9ECC0070A008 /* 2LetterWords.json in Resources */,
 				D00291F92784193A0045231C /* Assets.xcassets in Resources */,
+				D0D3C0B427DA9F2D0070A008 /* 4LetterWords.json in Resources */,
+				D0D3C0B227DA9F0F0070A008 /* 3LetterWords.json in Resources */,
+				D0D3C0B827DA9F740070A008 /* 6LetterWords.json in Resources */,
+				D0D3C0BA27DA9F9A0070A008 /* 7LetterWords.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
