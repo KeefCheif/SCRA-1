@@ -87,6 +87,15 @@ class GameBoardViewModel: ObservableObject {
         return false
     }
     
+    func validateTileDrop(location: Int) -> Bool {
+        
+        // Case 1: First tile placed, can only place on the center square
+        // Case 2: Not first tile placed but first tile from a given turn, must be connected to another tile
+        // Case 3: Not first tile placed and not the first tile from a given turn
+        
+        return false
+    }
+    
     
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //

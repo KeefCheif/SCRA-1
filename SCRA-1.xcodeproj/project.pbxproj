@@ -16,9 +16,13 @@
 		D089E3ED27D67EC50075A0C4 /* GameBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3EC27D67EC50075A0C4 /* GameBoardView.swift */; };
 		D089E3EF27D67F260075A0C4 /* PlayerRackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3EE27D67F260075A0C4 /* PlayerRackView.swift */; };
 		D089E3F327D67FC20075A0C4 /* GameBoardModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3F227D67FC20075A0C4 /* GameBoardModifiers.swift */; };
+		ED10A49832EDC43B102B03E8 /* Pods_SCRA_1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17738C3EC927924E15F2A1FF /* Pods_SCRA_1.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17738C3EC927924E15F2A1FF /* Pods_SCRA_1.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SCRA_1.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5FF88F73D515EF30A5C37660 /* Pods-SCRA-1.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SCRA-1.release.xcconfig"; path = "Target Support Files/Pods-SCRA-1/Pods-SCRA-1.release.xcconfig"; sourceTree = "<group>"; };
+		AD9F8AAA68F68FBB2221A4EA /* Pods-SCRA-1.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SCRA-1.debug.xcconfig"; path = "Target Support Files/Pods-SCRA-1/Pods-SCRA-1.debug.xcconfig"; sourceTree = "<group>"; };
 		D00291F1278419390045231C /* SCRA-1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SCRA-1.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00291F4278419390045231C /* SCRA_1App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCRA_1App.swift; sourceTree = "<group>"; };
 		D00291F82784193A0045231C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -36,17 +40,38 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED10A49832EDC43B102B03E8 /* Pods_SCRA_1.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9A07C6854FBAA6AB04E222F9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				AD9F8AAA68F68FBB2221A4EA /* Pods-SCRA-1.debug.xcconfig */,
+				5FF88F73D515EF30A5C37660 /* Pods-SCRA-1.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		B070F245350AF32D2D1FFA1D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				17738C3EC927924E15F2A1FF /* Pods_SCRA_1.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D00291E8278419390045231C = {
 			isa = PBXGroup;
 			children = (
 				D00291F3278419390045231C /* SCRA-1 */,
 				D00291F2278419390045231C /* Products */,
+				9A07C6854FBAA6AB04E222F9 /* Pods */,
+				B070F245350AF32D2D1FFA1D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -137,9 +162,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D00291FF2784193A0045231C /* Build configuration list for PBXNativeTarget "SCRA-1" */;
 			buildPhases = (
+				32D7F3A9C104FD3ABFD5012A /* [CP] Check Pods Manifest.lock */,
 				D00291ED278419390045231C /* Sources */,
 				D00291EE278419390045231C /* Frameworks */,
 				D00291EF278419390045231C /* Resources */,
+				29A9F8EA820EF59E6EAC4B82 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -194,6 +221,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		29A9F8EA820EF59E6EAC4B82 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SCRA-1/Pods-SCRA-1-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SCRA-1/Pods-SCRA-1-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SCRA-1/Pods-SCRA-1-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		32D7F3A9C104FD3ABFD5012A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-SCRA-1-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D00291ED278419390045231C /* Sources */ = {
@@ -331,6 +400,7 @@
 		};
 		D00292002784193A0045231C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD9F8AAA68F68FBB2221A4EA /* Pods-SCRA-1.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -360,6 +430,7 @@
 		};
 		D00292012784193A0045231C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5FF88F73D515EF30A5C37660 /* Pods-SCRA-1.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
