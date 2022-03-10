@@ -22,6 +22,7 @@
 		D0D3C0B627DA9F510070A008 /* 5LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B527DA9F510070A008 /* 5LetterWords.json */; };
 		D0D3C0B827DA9F740070A008 /* 6LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B727DA9F740070A008 /* 6LetterWords.json */; };
 		D0D3C0BA27DA9F9A0070A008 /* 7LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0B927DA9F9A0070A008 /* 7LetterWords.json */; };
+		D0D3C0BE27DAA46E0070A008 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0BD27DAA46E0070A008 /* GoogleService-Info.plist */; };
 		ED10A49832EDC43B102B03E8 /* Pods_SCRA_1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17738C3EC927924E15F2A1FF /* Pods_SCRA_1.framework */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		D0D3C0B527DA9F510070A008 /* 5LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 5LetterWords.json; sourceTree = "<group>"; };
 		D0D3C0B727DA9F740070A008 /* 6LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 6LetterWords.json; sourceTree = "<group>"; };
 		D0D3C0B927DA9F9A0070A008 /* 7LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 7LetterWords.json; sourceTree = "<group>"; };
+		D0D3C0BD27DAA46E0070A008 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 		D00291F3278419390045231C /* SCRA-1 */ = {
 			isa = PBXGroup;
 			children = (
+				D0D3C0BD27DAA46E0070A008 /* GoogleService-Info.plist */,
 				D0D3C0AE27DA9E8E0070A008 /* Dictionary */,
 				D089E3E727D67E540075A0C4 /* Views */,
 				D089E3E227D67BFC0075A0C4 /* ViewModels */,
@@ -242,6 +245,7 @@
 			files = (
 				D00291FC2784193A0045231C /* Preview Assets.xcassets in Resources */,
 				D0D3C0B627DA9F510070A008 /* 5LetterWords.json in Resources */,
+				D0D3C0BE27DAA46E0070A008 /* GoogleService-Info.plist in Resources */,
 				D0D3C0B027DA9ECC0070A008 /* 2LetterWords.json in Resources */,
 				D00291F92784193A0045231C /* Assets.xcassets in Resources */,
 				D0D3C0B427DA9F2D0070A008 /* 4LetterWords.json in Resources */,
