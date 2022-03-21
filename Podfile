@@ -9,5 +9,6 @@ target 'SCRA-1' do
 
   pod 'Firebase/Core'
   pod 'Firebase/Firestore'
+  pod 'Firebase/Auth'
 
 end
