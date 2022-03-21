@@ -18,8 +18,11 @@ struct SCRA_1App: App {
     
     var body: some Scene {
         WindowGroup {
+            /*
             MainGameView()
                 .environmentObject(GameBoardViewModel())
+             */
+            LoginManagerView(login_manager: LoginManagerViewModel())
         }
     }
 }

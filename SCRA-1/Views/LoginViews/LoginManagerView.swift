@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct LoginManagerView: View {
     
     @StateObject var login_manager: LoginManagerViewModel
+    
+    @State private var email: String = ""
+    @State private var password: String = ""
     
     var body: some View {
         
@@ -23,12 +27,67 @@ struct LoginManagerView: View {
                 
                 VStack {
                     
+                    Spacer()
+                    
+                    // Login Section
+                    TextField("Email", text: self.$email)
+                        .multilineTextAlignment(.center)
+                        .font(.title)
+                        .padding(6)
+                    
+                    SecureField("Password", text: self.$password)
+                        .multilineTextAlignment(.center)
+                        .font(.title)
+                        .padding(6)
+                    
+                    Button(action: {
+                        self.signIn()
+                    }, label: {
+                        Text("Login")
+                            .foregroundColor(.white)
+                            .padding(6)
+                            .background(Rectangle().cornerRadius(8).foregroundColor(.green).frame(width: geo.size.width/5))
+                    })
+                        .padding(6)
+                    
+                    // Register Section
+                    Button(action: {
+                        self.login_manager.registerFormShowing = true
+                    }, label: {
+                        Text("Register")
+                            .foregroundColor(.white)
+                            .padding(6)
+                            .background(Rectangle().cornerRadius(8).frame(width: geo.size.width/5))
+                    })
+                        .padding(6)
+                    
+                    Spacer()
+                    
+                    // Register Button
+                    
+                }
+                .sheet(isPresented: self.$login_manager.registerFormShowing, onDismiss: nil) {
+                    RegisterForm(registrationFormShowing: self.$login_manager.registerFormShowing)
                 }
                 
             }
             
         }
         
+    }
+    
+    private func signIn() {
+        Auth.auth().signIn(withEmail: self.email, password: self.password) { (_, error) in
+            DispatchQueue.main.async {
+                if let error = error {
+                    // Login failed
+                    self.email = ""
+                    self.password = ""
+                } else {
+                    self.login_manager.state.loggedIn = true
+                }
+            }
+        }
     }
 }
 
