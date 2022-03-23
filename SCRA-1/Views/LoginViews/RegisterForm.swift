@@ -12,6 +12,8 @@ struct RegisterForm: View {
     
     @Binding var registrationFormShowing: Bool
     
+    @State var registerError: LoginErrorType?
+    
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirm_password: String = ""
@@ -65,18 +67,31 @@ struct RegisterForm: View {
                 Spacer()
                 
             }
+            .alert(item: self.$registerError) { (error) in
+                Alert(title: Text("Register Failed"), message: Text(error.error.localizedDescription), dismissButton: .default(Text("Okay")) {
+                    self.registerError = nil
+                })
+            }
             
         }
     }
     
     private func register() {
-        guard self.password == self.confirm_password else { return }
+        guard self.password == self.confirm_password else {
+            self.password = ""
+            self.confirm_password = ""
+            self.registerError = LoginErrorType(error: .passwordMismatch)
+            return
+        }
         
         Auth.auth().createUser(withEmail: self.email, password: self.password) { (_, error) in
             DispatchQueue.main.async {
                 if let error = error {
+                    
+                    self.registerError = LoginErrorType(error: .propogatedError(error.localizedDescription))
                     self.password = ""
                     self.confirm_password = ""
+                    
                 } else {
                     self.registrationFormShowing = false
                 }

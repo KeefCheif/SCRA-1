@@ -13,6 +13,7 @@
 		D00B647B27DAF9A3001D6660 /* LoginManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B647A27DAF9A3001D6660 /* LoginManagerView.swift */; };
 		D00B647D27DAFAEC001D6660 /* LoginManagerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B647C27DAFAEC001D6660 /* LoginManagerModel.swift */; };
 		D00B647F27DAFDC2001D6660 /* LoginManagerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B647E27DAFDC2001D6660 /* LoginManagerViewModel.swift */; };
+		D084CABA27E9116E00FAAFB4 /* LoginError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D084CAB927E9116E00FAAFB4 /* LoginError.swift */; };
 		D089E3E427D67C430075A0C4 /* GameBoardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3E327D67C430075A0C4 /* GameBoardViewModel.swift */; };
 		D089E3E627D67C710075A0C4 /* GameBoardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3E527D67C710075A0C4 /* GameBoardModel.swift */; };
 		D089E3EA27D67E740075A0C4 /* MainGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3E927D67E740075A0C4 /* MainGameView.swift */; };
@@ -42,6 +43,7 @@
 		D00B647A27DAF9A3001D6660 /* LoginManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginManagerView.swift; sourceTree = "<group>"; };
 		D00B647C27DAFAEC001D6660 /* LoginManagerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginManagerModel.swift; sourceTree = "<group>"; };
 		D00B647E27DAFDC2001D6660 /* LoginManagerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginManagerViewModel.swift; sourceTree = "<group>"; };
+		D084CAB927E9116E00FAAFB4 /* LoginError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginError.swift; sourceTree = "<group>"; };
 		D089E3E327D67C430075A0C4 /* GameBoardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardViewModel.swift; sourceTree = "<group>"; };
 		D089E3E527D67C710075A0C4 /* GameBoardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardModel.swift; sourceTree = "<group>"; };
 		D089E3E927D67E740075A0C4 /* MainGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainGameView.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 		D00291F3278419390045231C /* SCRA-1 */ = {
 			isa = PBXGroup;
 			children = (
+				D084CAB727E9115600FAAFB4 /* Errors */,
 				D0D3C0BD27DAA46E0070A008 /* GoogleService-Info.plist */,
 				D0D3C0AE27DA9E8E0070A008 /* Dictionary */,
 				D089E3E727D67E540075A0C4 /* Views */,
@@ -136,6 +139,14 @@
 				D09B3FBA27E8F09700DF0BDF /* RegisterForm.swift */,
 			);
 			path = LoginViews;
+			sourceTree = "<group>";
+		};
+		D084CAB727E9115600FAAFB4 /* Errors */ = {
+			isa = PBXGroup;
+			children = (
+				D084CAB927E9116E00FAAFB4 /* LoginError.swift */,
+			);
+			path = Errors;
 			sourceTree = "<group>";
 		};
 		D089E3E127D67BF70075A0C4 /* Models */ = {
@@ -347,6 +358,7 @@
 				D089E3ED27D67EC50075A0C4 /* GameBoardView.swift in Sources */,
 				D089E3F327D67FC20075A0C4 /* GameBoardModifiers.swift in Sources */,
 				D00B647D27DAFAEC001D6660 /* LoginManagerModel.swift in Sources */,
+				D084CABA27E9116E00FAAFB4 /* LoginError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
