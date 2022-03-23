@@ -13,6 +13,8 @@ class LoginManagerViewModel: ObservableObject {
     
     @Published var registerFormShowing: Bool = false
     
+    @Published var loginError: LoginErrorType?
+    
     //@Published var login_errors:
     
     func login(password: String) -> Bool {

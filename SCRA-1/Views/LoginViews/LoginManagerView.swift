@@ -19,7 +19,7 @@ struct LoginManagerView: View {
         
         if (login_manager.state.loggedIn) {
             
-            MenuManagerView()
+            MenuManagerView(loggedIn: self.$login_manager.state.loggedIn)
             
         } else {
             
@@ -69,6 +69,11 @@ struct LoginManagerView: View {
                 .sheet(isPresented: self.$login_manager.registerFormShowing, onDismiss: nil) {
                     RegisterForm(registrationFormShowing: self.$login_manager.registerFormShowing)
                 }
+                .alert(item: self.$login_manager.loginError) { (error) in
+                    Alert(title: Text("Login Failed"), message: Text(error.error.localizedDescription), dismissButton: .default(Text("Okay")) {
+                        self.login_manager.loginError = nil
+                    })
+                }
                 
             }
             
@@ -81,9 +86,12 @@ struct LoginManagerView: View {
             DispatchQueue.main.async {
                 if let error = error {
                     // Login failed
+                    self.login_manager.loginError = LoginErrorType(error: .propogatedError(error.localizedDescription))
+                    self.password = ""
+                
+                } else {
                     self.email = ""
                     self.password = ""
-                } else {
                     self.login_manager.state.loggedIn = true
                 }
             }
