@@ -11,20 +11,25 @@ import FirebaseAuth
 struct MenuManagerView: View {
     
     @Binding var loggedIn: Bool
+    @StateObject var menu_view_model: MenuManagerViewModel
     
     var body: some View {
-        GeometryReader { geo in
-            VStack {
-                Button(action: {
-                    self.signOut()
-                }, label: {
-                    Text("Sign Out")
-                        .bold()
-                        .foregroundColor(.white)
-                        .padding(6)
-                        .background(Rectangle().cornerRadius(8).foregroundColor(.red).frame(width: geo.size.width/5))
-                })
+        
+        VStack {
+            
+            MenuTopNav(menu_view_manager: self.$menu_view_model.menu_model.view_selector, loggedIn: self.$loggedIn)
+            
+            Spacer()
+            
+            switch self.menu_view_model.menu_model.view_selector {
+            case .menu:
+                MenuView(menu_view_manager: self.$menu_view_model.menu_model.view_selector)
+            default:
+                Text("default")
             }
+            
+            Spacer()
+            
         }
         
     }
@@ -36,11 +41,5 @@ struct MenuManagerView: View {
         } catch {
             print("SIGN OUT FAILED")
         }
-    }
-}
-
-struct MenuManagerView_Previews: PreviewProvider {
-    static var previews: some View {
-        MenuManagerView(loggedIn: Binding.constant(true))
     }
 }
