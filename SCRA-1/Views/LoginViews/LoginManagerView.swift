@@ -19,7 +19,7 @@ struct LoginManagerView: View {
         
         if (login_manager.state.loggedIn) {
             
-            MenuManagerView(loggedIn: self.$login_manager.state.loggedIn)
+            MenuManagerView(loggedIn: self.$login_manager.state.loggedIn, menu_view_model: MenuManagerViewModel())
             
         } else {
             
