@@ -74,6 +74,11 @@ struct LoginManagerView: View {
                         self.login_manager.loginError = nil
                     })
                 }
+                .onAppear {
+                    if Auth.auth().currentUser != nil {
+                        self.login_manager.state.loggedIn = true
+                    }
+                }
                 
             }
             
