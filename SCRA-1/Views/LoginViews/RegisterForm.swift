@@ -213,6 +213,19 @@ struct RegisterForm: View {
                             ]
                             
                             userDoc.setData(usernameData, merge: true)
+                            
+                            // tracks the current user's friends and games
+                            userDoc.setData(["friends":[]], merge: true)
+                            userDoc.setData(["games":[]], merge: true)
+                            
+                            // Requests sent by the current user to other users
+                            userDoc.setData(["pendingGameReq":[]], merge: true)
+                            userDoc.setData(["pendingFriendReq":[]], merge: true)
+                            
+                            // Requests sent by other users to the current user
+                            userDoc.setData(["GameReq":[]], merge: true)
+                            userDoc.setData(["friendReq":[]], merge: true)
+                            
                             self.registrationFormShowing = false
                         }
                     }
