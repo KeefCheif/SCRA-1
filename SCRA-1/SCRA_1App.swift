@@ -21,7 +21,7 @@ struct SCRA_1App: App {
             /*
             MainGameView()
                 .environmentObject(GameBoardViewModel())
-             */
+            */
             LoginManagerView(login_manager: LoginManagerViewModel())
         }
     }

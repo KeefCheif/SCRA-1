@@ -15,21 +15,11 @@ struct MenuManagerView: View {
     
     var body: some View {
         
-        VStack {
-            
-            MenuTopNav(menu_view_manager: self.$menu_view_model.menu_model.view_selector, loggedIn: self.$loggedIn)
-            
-            Spacer()
-            
-            switch self.menu_view_model.menu_model.view_selector {
-            case .menu:
-                MenuView(menu_view_manager: self.$menu_view_model.menu_model.view_selector)
-            default:
-                Text("default")
-            }
-            
-            Spacer()
-            
+        switch self.menu_view_model.menu_model.view_selector {
+        case .menu:
+            MenuView(menu_view_manager: self.$menu_view_model.menu_model.view_selector, loggedIn: self.$loggedIn)
+        default:
+            Text("default")
         }
         
     }

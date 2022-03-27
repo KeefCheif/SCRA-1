@@ -18,9 +18,7 @@ struct LoginManagerView: View {
     var body: some View {
         
         if (login_manager.state.loggedIn) {
-            
             MenuManagerView(loggedIn: self.$login_manager.state.loggedIn, menu_view_model: MenuManagerViewModel())
-            
         } else {
             
             GeometryReader { geo in
