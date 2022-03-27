@@ -12,11 +12,19 @@ extension Text {
     func GameSelectorSubText() -> some View {
         self.fontWeight(.heavy).foregroundColor(.white).font(.caption)
     }
+    
+    func selectorMessage() -> some View {
+        self.fontWeight(.heavy).foregroundColor(.white).font(.caption).italic()
+    }
 }
 
 extension Image {
     func GameSelectorLogo() -> some View {
-        self.resizable().scaledToFit().frame(width: 30).foregroundColor(.white)
+        self.resizable().scaledToFit().frame(width: 40).foregroundColor(.white)
+    }
+    
+    func selectorSubButton() -> some View {
+        self.resizable().scaledToFit().frame(width: 20).foregroundColor(.white)
     }
 }
 

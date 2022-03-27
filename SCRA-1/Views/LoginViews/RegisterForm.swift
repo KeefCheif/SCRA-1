@@ -123,7 +123,7 @@ struct RegisterForm: View {
     
 
     private func usernameTaken(completion: @escaping (Bool) -> Void) {
-        // * Returns true if the username is available
+        // * Completes true if the username is available
         
         if self.username.isEmpty {
             completion(false)
