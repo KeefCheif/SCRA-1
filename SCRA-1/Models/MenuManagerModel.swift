@@ -11,25 +11,7 @@ struct MenuModel {
     
     var view_selector: MenuViewSelector = .menu
     
-    var profile: Profile = Profile()
-    
-}
-
-struct Profile {
-    
-    var friends: [String]?
-    var games: [Game]?
-    
-}
-
-struct Game {
-    
-    var opponent: String?
-    
-    var my_score: Int?
-    var their_score: Int?
-    
-    var game_id: String?
+    //var profile: Profile = Profile()
     
 }
 

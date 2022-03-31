@@ -9,46 +9,151 @@ import SwiftUI
 
 struct GameListView: View {
     
-    // Will also need a State object to display their games (This will need to access the DB)
-    @Binding var gameSelectorState: GameSelectorState
+    @ObservedObject var view_model: GameSelectorViewModel
+    
+    @State var acceptInviteAlert: Bool = false
+    @State var inviteGame: Game? = nil
     
     var body: some View {
         
-        if (false) {    // is loading
-            
+        if self.view_model.isLoading {
+            GenericLoadingView()
+        } else if self.view_model.games.isEmpty && self.view_model.gameReq.isEmpty && self.view_model.pendingReq.isEmpty{
+        
+            Text("You do not have any games nor requests. You can create a new game by tapping the plus button in the top left corner of the Games region.")
+                .selectorMessage()
+    
         } else {
-            ScrollView(.horizontal) {
+            
+            VStack {
                 
                 HStack {
+                    Text("Games:")
+                        .GameSelectorSubText()
                     Spacer()
-                    
-                    Button(action: {
-                        self.gameSelectorState = .new_game
-                    }, label: {
-                        
-                        VStack {
-                            Image(systemName: "plus.circle")
-                                .GameSelectorLogo()
-                            
-                            Text("New Game")
-                                .GameSelectorSubText()
+                }
+                if !self.view_model.games.isEmpty {
+                    Group {
+                        ScrollView(.horizontal) {
+                            HStack {
+                                Spacer()
+                                
+                                ForEach(self.view_model.games, id: \.self) { game in
+                                    
+                                    Button(action: {
+                                        
+                                    }, label: {
+                                        VStack {
+                                            Image(systemName: "person.2.circle")
+                                                .GameSelectorLogo()
+                                            Text("vs \(game.opponent)")
+                                                .GameSelectorSubText()
+                                        }
+                                    })
+                                    
+                                }
+                                
+                                Spacer()
+                            }
                         }
-                        
-                    })
+                    }
                     
-                    Spacer()
-                    
-                    // For each game they have right here
+                } else {
+                    Text("You do not have any games.")
+                        .selectorMessage()
+                        .padding(.top, 6)
                 }
                 
+                Divider()
+                
+                HStack {
+                    Text("Game Invites:")
+                        .GameSelectorSubText()
+                    Spacer()
+                }
+                
+                if !self.view_model.gameReq.isEmpty {
+                    Group {
+                        ScrollView(.horizontal) {
+                            HStack {
+                                Spacer()
+                                
+                                ForEach(self.view_model.gameReq, id: \.self) { invite in
+                                    
+                                    Button(action: {
+                                        self.inviteGame = invite
+                                        self.acceptInviteAlert = true
+                                    }, label: {
+                                        VStack {
+                                            Image(systemName: "person.circle")
+                                                .GameSelectorLogo()
+                                            Text(invite.opponent)
+                                                .GameSelectorSubText()
+                                        }
+                                    })
+                                    
+                                }
+                                
+                                Spacer()
+                            }
+                        }
+                    }
+                } else {
+                    Text("You do not have any game invites.")
+                        .selectorMessage()
+                        .padding(.top, 6)
+                }
+                
+                Divider()
+                
+                HStack {
+                    Text("Pending Invites:")
+                        .GameSelectorSubText()
+                    Spacer()
+                }
+                
+                if !self.view_model.pendingReq.isEmpty {
+                    Group {
+                        ScrollView(.horizontal) {
+                            HStack {
+                                Spacer()
+                                
+                                ForEach(self.view_model.pendingReq, id: \.self) { pending in
+                                    
+                                    VStack {
+                                        Image(systemName: "person.circle")
+                                            .GameSelectorLogo()
+                                        Text(pending.opponent)
+                                            .GameSelectorSubText()
+                                    }
+                                    
+                                }
+                                
+                                Spacer()
+                            }
+                        }
+                    }
+                } else {
+                    Text("You do not have any pending game invites.")
+                        .GameSelectorSubText()
+                        .padding(.top, 6)
+                }
             }
+            .alert("Accept Game Invite?", isPresented: self.$acceptInviteAlert, actions: {
+                Button("Yes", role: .cancel, action: {
+                    self.view_model.acceptGameRequest(gameReq: self.inviteGame!)
+                    self.acceptInviteAlert = false
+                    self.inviteGame = nil
+                })
+                Button("No", role: .destructive, action: {
+                    self.view_model.rejectGameRequest(gameReq: self.inviteGame!)
+                    self.acceptInviteAlert = false
+                    self.inviteGame = nil
+                })
+            }, message: {
+                Text("Would you like to accept the game invite from \(self.inviteGame == nil ? "" : self.inviteGame!.opponent)?")
+            })
         }
-        
     }
-}
-
-struct GameListView_Previews: PreviewProvider {
-    static var previews: some View {
-        GameListView(gameSelectorState: Binding.constant(.list))
-    }
+    
 }

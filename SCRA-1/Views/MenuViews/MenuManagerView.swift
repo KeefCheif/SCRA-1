@@ -18,6 +18,7 @@ struct MenuManagerView: View {
         switch self.menu_view_model.menu_model.view_selector {
         case .menu:
             MenuView(menu_view_manager: self.$menu_view_model.menu_model.view_selector, loggedIn: self.$loggedIn)
+                .environmentObject(FriendSelectorViewModel())
         default:
             Text("default")
         }

@@ -9,28 +9,27 @@ import SwiftUI
 
 struct GameSelectorManager: View {
     
-    @StateObject var view_model: GameSelectorViewModel
+    @ObservedObject var view_model: GameSelectorViewModel
+    @Binding var friends: [BasicUser]
     
     var body: some View {
         
-        switch self.view_model.selector_model.gameSelectorState {
+        switch self.view_model.state {
         case .list:
-            GameListView(gameSelectorState: self.$view_model.selector_model.gameSelectorState)
+            GameListView(view_model: self.view_model)
         case .new_game:
-            NewGameView(gameSelectorState: self.$view_model.selector_model.gameSelectorState)
+            NewGameView(gameSelectorState: self.$view_model.state)
         case .multiplayer:
-            MultiplayerSelectionView(gameSelectorState: self.$view_model.selector_model.gameSelectorState)
+            MultiplayerSelectionView(state: self.$view_model.state, friends: self.$friends)
         case .singleplayer:
             Text("Singleplayer")
+        case .list_friends:
+            GameSelectorListFriends(state: self.$view_model.state, friends: self.$friends, invitee: self.$view_model.invitee)
         case .invite:
             Text("Invite")
+        case .create_game:
+            GameSelectorCreateGame(view_model: self.view_model)
         }
         
-    }
-}
-
-struct GameSelectorManager_Previews: PreviewProvider {
-    static var previews: some View {
-        GameSelectorManager(view_model: GameSelectorViewModel())
     }
 }

@@ -11,23 +11,22 @@ struct FriendSelectorManager: View {
     
     @EnvironmentObject var view_model: FriendSelectorViewModel
     @State var displayUser: BasicUser?
-    @State var view_state: FriendSelectorState = .listFriends
     //@State var friendSelectorError: FriendSelectorErrorType?
     
     var body: some View {
         
-        switch self.view_state {
+        switch self.view_model.state {
         case .listFriends:      // List out their friends (also add friend button)
-            ListFriendsView(view_state: self.$view_state)
+            ListFriendsView(view_state: self.$view_model.state)
                 .environmentObject(self.view_model)
         case .requestFriend:    // Send someone a friend request
-            InviteFriendView(displayUser: self.$displayUser, view_state: self.$view_state)
+            InviteFriendView(displayUser: self.$displayUser, view_state: self.$view_model.state)
                 .environmentObject(self.view_model)
         case .displayResult:    // Display the result after trying to send a friend request
-            FriendSelectorDisplayResult(displayUser: self.$displayUser, view_state: self.$view_state)
+            FriendSelectorDisplayResult(displayUser: self.$displayUser, view_state: self.$view_model.state)
                 .environmentObject(self.view_model)
         case .invites:          // List out the requests that they have recieved
-            FriendSelectorInvites(view_state: self.$view_state, friendReq: self.$view_model.friendReq, pendingReq: self.$view_model.pendingReq)
+            FriendSelectorInvites(view_state: self.$view_model.state, friendReq: self.$view_model.friendReq, pendingReq: self.$view_model.pendingReq)
                 .environmentObject(self.view_model)
         }
         

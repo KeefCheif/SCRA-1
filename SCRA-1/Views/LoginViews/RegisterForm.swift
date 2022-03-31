@@ -223,7 +223,7 @@ struct RegisterForm: View {
                             userDoc.setData(["pendingFriendReq":[]], merge: true)
                             
                             // Requests sent by other users to the current user
-                            userDoc.setData(["GameReq":[]], merge: true)
+                            userDoc.setData(["gameReq":[]], merge: true)
                             userDoc.setData(["friendReq":[]], merge: true)
                             
                             self.registrationFormShowing = false

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct MenuView: View {
     
+    @EnvironmentObject var view_model: FriendSelectorViewModel
+    
     @Binding var menu_view_manager: MenuViewSelector
     @Binding var loggedIn: Bool
     
@@ -17,78 +19,106 @@ struct MenuView: View {
     
     var body: some View {
         
-        GeometryReader { geo in
-            ZStack {
+        ZStack {
+            Color(.gray)
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                MenuTopNav(menu_view_manager: self.$menu_view_manager, loggedIn: self.$loggedIn)
+
+                GameSelectorDropDown(friends: self.$view_model.friends, expand: self.$expandGame)
+                    .animation(.spring(), value: self.expandFriend)
                 
-                VStack() {
-                    
-                    MenuTopNav(menu_view_manager: self.$menu_view_manager, loggedIn: self.$loggedIn)
-                        .padding(.top, 50)
-                    
-                    Spacer()
-                    
-                    GameSelectorDropDown(geo: geo, expand: self.$expandGame)
-                        .animation(.spring(), value: self.expandFriend)
-                    FriendSelectorDropDown(geo: geo, expand: self.$expandFriend)
-                        .animation(.spring(), value: self.expandGame)
-                        .environmentObject(FriendSelectorViewModel())
-                    
-                    Spacer()
-                    
-                }
+                FriendSelectorDropDown(expand: self.$expandFriend)
+                    .animation(.spring(), value: self.expandGame)
+                    .environmentObject(self.view_model)
+                
+                Spacer()
                 
             }
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
-            .background(Color.gray)
+            .padding(10)
+            
         }
-        .edgesIgnoringSafeArea(.all)
     }
 }
 
+
 struct GameSelectorDropDown: View {
     
-    var geo:GeometryProxy
+    @Binding var friends: [BasicUser]
     @Binding var expand: Bool
+    
+    @StateObject var view_model: GameSelectorViewModel = GameSelectorViewModel()
     
     var body: some View {
         
         VStack {
             
-            Button(action: {
-                self.expand.toggle()
-            }, label: {
+            HStack {
                 
-                HStack {
-                    Group {
-                        Text("Games")
-                            .fontWeight(.heavy)
-                            .foregroundColor(.white)
-                        
-                        Image(systemName: self.expand ? "chevron.down.circle" : "chevron.up.circle")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 25)
-                            .foregroundColor(.white)
+                Button(action: {
+                    self.view_model.state = .new_game
+                    self.expand = true
+                }, label: {
+                    Image(systemName: "plus.circle")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25)
+                        .foregroundColor(.white)
+                    
+                })
+                
+                Spacer()
+                
+                Button(action: {
+                    self.expand.toggle()
+                    self.view_model.state = .list
+                }, label: {
+                    
+                    HStack {
+                        Group {
+                            Text("Games")
+                                .fontWeight(.heavy)
+                                .foregroundColor(.white)
+                            
+                            Image(systemName: self.expand ? "chevron.down.circle" : "chevron.up.circle")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 25)
+                                .foregroundColor(.white)
+                        }
                     }
-                }
-            })
+                })
+
+                Spacer()
+                
+                Button(action: {
+                    // Create refresh function
+                }, label: {
+                    Image(systemName: "arrow.clockwise.circle")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25)
+                        .foregroundColor(.white)
+                    
+                })
+                
+            }
             
             if (self.expand) {
-                GameSelectorManager(view_model: GameSelectorViewModel())
+                GameSelectorManager(view_model: self.view_model, friends: self.$friends)
+                    .padding(6)
             }
         }
         .padding(6)
-        .frame(width: geo.size.width - 20)
+        //.frame(width: geo.size.width - 20)
         .background(LinearGradient(gradient: .init(colors: [.green, .yellow]), startPoint: .top, endPoint: .bottom))
         .cornerRadius(20)
         .animation(.spring(), value: self.expand)
-        
     }
 }
 
 struct FriendSelectorDropDown: View {
-    
-    var geo: GeometryProxy
     
     @EnvironmentObject var view_model: FriendSelectorViewModel
     @Binding var expand: Bool
@@ -98,10 +128,23 @@ struct FriendSelectorDropDown: View {
         VStack {
             HStack {
                 
+                Button(action: {
+                    self.view_model.state = .requestFriend
+                    self.expand = true
+                }, label: {
+                    Image(systemName: "plus.circle")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25)
+                        .foregroundColor(.white)
+                    
+                })
+                
                 Spacer()
         // - - - - - Drop Down Button - - - - - //
                 Button(action: {
                     self.expand.toggle()
+                    self.view_model.state = .listFriends
                 }, label: {
                     
                     HStack {
@@ -140,11 +183,17 @@ struct FriendSelectorDropDown: View {
             
         }
         .padding(6)
-        .frame(width: geo.size.width - 20)
+        //.frame(width: geo.size.width - 20)
         .background(LinearGradient(gradient: .init(colors: [.blue, .purple]), startPoint: .top, endPoint: .bottom))
         .cornerRadius(20)
         .animation(.spring(), value: self.expand)
-        
+    }
+}
+
+struct MenuView_Previews: PreviewProvider {
+    static var previews: some View {
+        MenuView(menu_view_manager: Binding.constant(.menu), loggedIn: Binding.constant(true))
+            .environmentObject(FriendSelectorViewModel())
     }
 }
 

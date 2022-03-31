@@ -15,7 +15,7 @@ struct GenericLoadingView: View {
         
         VStack {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 .scaleEffect(3)
                 .padding()
             
