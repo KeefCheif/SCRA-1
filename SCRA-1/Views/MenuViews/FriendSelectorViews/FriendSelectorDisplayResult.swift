@@ -89,8 +89,8 @@ struct FriendSelectorDisplayResult: View {
         let userDoc = db.collection("users").document(Auth.auth().currentUser!.uid)
         let otherUserDoc = db.collection("users").document(self.displayUser!.userID!)
         
-        userDoc.setData(["pendingFriendReq": [self.displayUser!.userID!]], merge: true)
-        otherUserDoc.setData(["friendReq": [Auth.auth().currentUser!.uid]], merge: true)
+        userDoc.updateData(["pendingFriendReq": FieldValue.arrayUnion([self.displayUser!.userID!])])
+        otherUserDoc.updateData(["friendReq": FieldValue.arrayUnion([Auth.auth().currentUser!.uid])])
         
         return
     }

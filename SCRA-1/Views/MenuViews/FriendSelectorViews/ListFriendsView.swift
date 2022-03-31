@@ -21,17 +21,7 @@ struct ListFriendsView: View {
             ScrollView(.horizontal) {
                 HStack {
                     
-        // - - - - - Add Friend Button - - - - - //
-                    Button(action: {
-                        self.view_state = .requestFriend
-                    }, label: {
-                        VStack {
-                            Image(systemName: "plus.circle")
-                                .GameSelectorLogo()
-                            Text("Add Friend")
-                                .GameSelectorSubText()
-                        }
-                    })
+                    Spacer()
                     
                     if self.view_model.friendReq != nil || self.view_model.pendingReq != nil {
                         
@@ -69,10 +59,10 @@ struct ListFriendsView: View {
                         })
                         
                     }
-                    
+                    Spacer()
                 }
             }
-            
         }
     }
+    
 }

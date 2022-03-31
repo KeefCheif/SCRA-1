@@ -55,7 +55,6 @@ struct MenuTopNav: View {
             })
             
         }
-        .padding(10)
         
     }
     

@@ -9,11 +9,23 @@ import Foundation
 
 struct GameSelectorModel {
     
-    var gameSelectorState: GameSelectorState = .list
-    
     // - - - - - DB info - - - - -//
-    var games: [String]?                // A list of game ids (Might need to make it actual game info so an array of a struct)
-    var friends: [String]?              // A list of friend ids for easy invites to new games
+    var games: [Game] = [Game]()        // A list of game ids (Might need to make it actual game info so an array of a struct)
+    
+}
+
+struct Game: Hashable {
+    
+    var gameID: String
+    var opponent: String
+    var opponentID: String
+    
+}
+
+struct GameSelectionDisplay: Hashable {
+    
+    var gameID: String
+    var opponent: String
     
 }
 
@@ -23,6 +35,8 @@ enum GameSelectorState {
     case new_game
     case multiplayer
     case singleplayer
+    case list_friends
     case invite
+    case create_game
     
 }

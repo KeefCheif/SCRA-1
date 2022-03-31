@@ -14,6 +14,8 @@ class FriendSelectorViewModel: ObservableObject {
     
     @Published var isLoading: Bool = true
     
+    @Published var state: FriendSelectorState = .listFriends
+    
     @Published var friends: [BasicUser] = [BasicUser]()
     
     @Published var friendReq: [BasicUser]?
@@ -21,6 +23,8 @@ class FriendSelectorViewModel: ObservableObject {
     @Published var pendingReq: [BasicUser]?
     
     @Published var error: FriendSelectorErrorType?
+    
+    @Published var isError: Bool = false
     
     init() {
         self.refreshAll()

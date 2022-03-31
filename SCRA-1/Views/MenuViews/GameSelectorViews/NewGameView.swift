@@ -13,42 +13,58 @@ struct NewGameView: View {
     
     var body: some View {
         
-        HStack {
+        VStack {
             
-            Spacer()
+            HStack {
+                
+                Spacer()
+                
+                // Two Options: Singleplayer & Multiplayer
+                Button(action: {
+                    self.gameSelectorState = .singleplayer
+                }, label: {
+                    VStack {
+                        Image(systemName: "person.circle")
+                            .GameSelectorLogo()
+                        
+                        Text("Singleplayer")
+                            .GameSelectorSubText()
+                    }
+                })
+                
+                Spacer()
+                
+                Button(action: {
+                    self.gameSelectorState = .multiplayer
+                }, label: {
+                    VStack {
+                        Image(systemName: "person.2.circle")
+                            .GameSelectorLogo()
+                        
+                        Text("Multiplayer")
+                            .GameSelectorSubText()
+                    }
+                })
+                
+                Spacer()
+                
+            }
+            .padding(.bottom, 6)
             
-            // Two Options: Singleplayer & Multiplayer
             Button(action: {
-                self.gameSelectorState = .singleplayer
+                self.gameSelectorState = .list
             }, label: {
-                VStack {
-                    Image(systemName: "person.circle")
-                        .GameSelectorLogo()
-                    
-                    Text("Singleplayer")
+                HStack {
+                    Image(systemName: "chevron.left.circle")
+                        .selectorSubButton()
+                    Text("Cancel")
                         .GameSelectorSubText()
                 }
             })
-            
-            Spacer()
-            
-            Button(action: {
-                self.gameSelectorState = .multiplayer
-            }, label: {
-                VStack {
-                    Image(systemName: "person.2.circle")
-                        .GameSelectorLogo()
-                    
-                    Text("Multiplayer")
-                        .GameSelectorSubText()
-                }
-            })
-            
-            Spacer()
             
         }
-        
     }
+    
 }
 
 

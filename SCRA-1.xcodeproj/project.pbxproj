@@ -24,6 +24,10 @@
 		D04D77AD27EFAA7700235B17 /* ListFriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04D77AC27EFAA7700235B17 /* ListFriendsView.swift */; };
 		D04D77B027EFAAAF00235B17 /* ListFriendsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04D77AF27EFAAAF00235B17 /* ListFriendsModel.swift */; };
 		D04D77B327EFAB2600235B17 /* FriendSelectorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04D77B227EFAB2600235B17 /* FriendSelectorViewModel.swift */; };
+		D057038727F2303100BD50DC /* GameSelectorError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D057038627F2303100BD50DC /* GameSelectorError.swift */; };
+		D057038927F27F1C00BD50DC /* GameSelectorListFriends.swift in Sources */ = {isa = PBXBuildFile; fileRef = D057038827F27F1C00BD50DC /* GameSelectorListFriends.swift */; };
+		D057038B27F2838600BD50DC /* GameSelectorCreateGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D057038A27F2838600BD50DC /* GameSelectorCreateGame.swift */; };
+		D057038D27F2EA2400BD50DC /* ColoredToggleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D057038C27F2EA2400BD50DC /* ColoredToggleStyle.swift */; };
 		D061348027EBE356008084B1 /* MenuManagerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D061347F27EBE356008084B1 /* MenuManagerViewModel.swift */; };
 		D061348227EBECDB008084B1 /* MenuTopNav.swift in Sources */ = {isa = PBXBuildFile; fileRef = D061348127EBECDB008084B1 /* MenuTopNav.swift */; };
 		D061348427EBED6C008084B1 /* MenuManagerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D061348327EBED6C008084B1 /* MenuManagerModel.swift */; };
@@ -75,6 +79,10 @@
 		D04D77AC27EFAA7700235B17 /* ListFriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFriendsView.swift; sourceTree = "<group>"; };
 		D04D77AF27EFAAAF00235B17 /* ListFriendsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFriendsModel.swift; sourceTree = "<group>"; };
 		D04D77B227EFAB2600235B17 /* FriendSelectorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendSelectorViewModel.swift; sourceTree = "<group>"; };
+		D057038627F2303100BD50DC /* GameSelectorError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelectorError.swift; sourceTree = "<group>"; };
+		D057038827F27F1C00BD50DC /* GameSelectorListFriends.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelectorListFriends.swift; sourceTree = "<group>"; };
+		D057038A27F2838600BD50DC /* GameSelectorCreateGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelectorCreateGame.swift; sourceTree = "<group>"; };
+		D057038C27F2EA2400BD50DC /* ColoredToggleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColoredToggleStyle.swift; sourceTree = "<group>"; };
 		D061347F27EBE356008084B1 /* MenuManagerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuManagerViewModel.swift; sourceTree = "<group>"; };
 		D061348127EBECDB008084B1 /* MenuTopNav.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuTopNav.swift; sourceTree = "<group>"; };
 		D061348327EBED6C008084B1 /* MenuManagerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuManagerModel.swift; sourceTree = "<group>"; };
@@ -190,6 +198,8 @@
 				D020C80927ECFE2900BC41D0 /* GameListView.swift */,
 				D020C80E27ED016600BC41D0 /* NewGameView.swift */,
 				D020C81327ED0BA500BC41D0 /* MultiplayerSelectionView.swift */,
+				D057038827F27F1C00BD50DC /* GameSelectorListFriends.swift */,
+				D057038A27F2838600BD50DC /* GameSelectorCreateGame.swift */,
 			);
 			path = GameSelectorViews;
 			sourceTree = "<group>";
@@ -198,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				D020C81627ED229D00BC41D0 /* LoadingViews.swift */,
+				D057038C27F2EA2400BD50DC /* ColoredToggleStyle.swift */,
 			);
 			path = UtilityViews;
 			sourceTree = "<group>";
@@ -235,6 +246,7 @@
 			children = (
 				D084CAB927E9116E00FAAFB4 /* LoginError.swift */,
 				D07B46FC27EE6521004B7635 /* FriendSelectorError.swift */,
+				D057038627F2303100BD50DC /* GameSelectorError.swift */,
 			);
 			path = Errors;
 			sourceTree = "<group>";
@@ -467,13 +479,17 @@
 				D04D77B027EFAAAF00235B17 /* ListFriendsModel.swift in Sources */,
 				D04D77AD27EFAA7700235B17 /* ListFriendsView.swift in Sources */,
 				D061348627EBF368008084B1 /* MenuView.swift in Sources */,
+				D057038B27F2838600BD50DC /* GameSelectorCreateGame.swift in Sources */,
 				D020C81427ED0BA500BC41D0 /* MultiplayerSelectionView.swift in Sources */,
 				D020C80A27ECFE2900BC41D0 /* GameListView.swift in Sources */,
 				D0759B0127F0DBBA000B0540 /* FriendSelectorDisplayResult.swift in Sources */,
 				D089E3E627D67C710075A0C4 /* GameBoardModel.swift in Sources */,
+				D057038927F27F1C00BD50DC /* GameSelectorListFriends.swift in Sources */,
+				D057038D27F2EA2400BD50DC /* ColoredToggleStyle.swift in Sources */,
 				D020C80C27ECFF4D00BC41D0 /* GameSlectorModel.swift in Sources */,
 				D00291F5278419390045231C /* SCRA_1App.swift in Sources */,
 				D020C81227ED097400BC41D0 /* GameSelectorModifiers.swift in Sources */,
+				D057038727F2303100BD50DC /* GameSelectorError.swift in Sources */,
 				D0759AFF27EFCBC9000B0540 /* InviteFriendView.swift in Sources */,
 				D09B3FB927E8EF7B00DF0BDF /* MenuManagerView.swift in Sources */,
 				D020C80F27ED016600BC41D0 /* NewGameView.swift in Sources */,
