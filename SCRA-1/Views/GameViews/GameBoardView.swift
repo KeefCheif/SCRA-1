@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GameBoardWrapperView: View {
+struct GameBoardWrapperView2: View {
     
     @EnvironmentObject var view_model: GameBoardViewModel
     
@@ -17,11 +17,11 @@ struct GameBoardWrapperView: View {
             
             VStack {
                 
-                GameBoardView(geo: board_geo)
-                    .modifier(BoardModifiers(geo: board_geo, board_details: self.$view_model.board_model.board_details))
+                GameBoardView2(geo: board_geo)
+                    .modifier(OldBoardModifiers(geo: board_geo, board_details: self.$view_model.board_model.board_details))
                     .environmentObject(self.view_model)
                 
-                PlayerRackView(geo: board_geo)
+                PlayerRackView2(geo: board_geo)
                     .frame(width: board_geo.size.width, height: board_geo.size.width/6.5)
                     .environmentObject(self.view_model)
                 
@@ -30,7 +30,7 @@ struct GameBoardWrapperView: View {
     }
 }
 
-struct GameBoardView: View {
+struct GameBoardView2: View {
     
     var geo: GeometryProxy
     @EnvironmentObject var view_model: GameBoardViewModel

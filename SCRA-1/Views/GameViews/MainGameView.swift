@@ -17,7 +17,7 @@ struct MainGameView: View {
             
             VStack {
                 
-                GameBoardWrapperView()
+                GameBoardWrapperView2()
                     .frame(width: geo.size.width, height: geo.size.width + geo.size.width/6)
                     .environmentObject(self.view_model)
                 

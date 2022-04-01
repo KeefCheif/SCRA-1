@@ -11,12 +11,14 @@ struct GameSelectorManager: View {
     
     @ObservedObject var view_model: GameSelectorViewModel
     @Binding var friends: [BasicUser]
+    @Binding var gameID: String
+    @Binding var menu_state: MenuViewSelector
     
     var body: some View {
         
         switch self.view_model.state {
         case .list:
-            GameListView(view_model: self.view_model)
+            GameListView(view_model: self.view_model, gameID: self.$gameID, menu_state: self.$menu_state)
         case .new_game:
             NewGameView(gameSelectorState: self.$view_model.state)
         case .multiplayer:

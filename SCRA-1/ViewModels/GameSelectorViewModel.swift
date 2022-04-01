@@ -178,13 +178,47 @@ class GameSelectorViewModel: ObservableObject {
         ]])])
         
         // Create data for the game: Board & Letter Bag
-        let board: [String] = [String](repeating: "blank", count: 225)
-        let letters: [Int] = [9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1, 2]
+        var letter_amounts: [Int] = Globals.Letter_Amounts
+        var letter_types: [String] = Globals.Letter_Types
+        var player1Letters: [String] = [String]()
+        var player2Letters: [String] = [String]()
+        
+        // - - - Deal Player 1 Letters - - - //
+        for _ in 0..<7 {
+            
+            let rand: Int = Int.random(in: 0..<letter_amounts.count)
+            
+            player1Letters.append(letter_types[rand])
+            
+            letter_amounts[rand] -= 1
+            
+            if letter_amounts[rand] <= 0 {
+                letter_types.remove(at: rand)
+                letter_amounts.remove(at: rand)
+            }
+        }
+        
+        // - - - Deal Player 2 Letters - - - //
+        for _ in 0..<7 {
+            
+            let rand: Int = Int.random(in: 0..<letter_amounts.count)
+            
+            player2Letters.append(letter_types[rand])
+            
+            letter_amounts[rand] -= 1
+            
+            // If there are 0 of that letter remaining then remove it from both arrays
+            if letter_amounts[rand] <= 0 {
+                letter_types.remove(at: rand)
+                letter_amounts.remove(at: rand)
+            }
+        }
         
         // Add necessary Data to the game
         gameDoc.setData(["gameComponents" : [
-            "board": board,
-            "letters": letters,
+            "board": Globals.Default_Board,
+            "letterAmounts": letter_amounts,
+            "letterTypes": letter_types,
             "startofGame": true,
             "player1Turn": true,
             "turnStarted": false,
@@ -193,6 +227,23 @@ class GameSelectorViewModel: ObservableObject {
             // Still need p1 & p2 letters, last turn, &
         ]], merge: true)
         
+        gameDoc.updateData([Auth.auth().currentUser!.uid + ".letters": player1Letters])
+        gameDoc.updateData([Auth.auth().currentUser!.uid + ".lastTurn": "idk yet"])
+        
+        gameDoc.updateData([gameReq.opponentID + ".letters": player2Letters])
+        gameDoc.updateData([gameReq.opponentID + ".lastTurn": "idk yet"])
+
+        /*
+        gameDoc.updateData([Auth.auth().currentUser!.uid: [     // Player1 Component
+            "letters": player1Letters,
+            "lastTurn": "idk yet"
+        ]])
+        
+        gameDoc.updateData([gameReq.opponentID: [               // Player2 Component
+            "letters": player2Letters,
+            "lastTurn": "idk yet"
+        ]])
+        */
         // Refresh
         self.refresh()
         

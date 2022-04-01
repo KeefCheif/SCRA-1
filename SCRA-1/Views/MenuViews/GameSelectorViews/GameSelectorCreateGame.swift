@@ -167,6 +167,12 @@ struct GameSelectorCreateGame: View {
                             "player2": displayUsername,
                             "player1ID": self.view_model.invitee!.userID!,
                             "player2ID": Auth.auth().currentUser!.uid
+                        ],
+                        self.view_model.invitee!.userID!: [      // Player1 Component
+                            "freeChallenges": self.freeChallenges
+                        ],
+                        Auth.auth().currentUser!.uid: [                              // Player2 Component
+                            "freeChallenges": self.freeChallenges
                         ]
                     ]) { error in
                         if let error = error {

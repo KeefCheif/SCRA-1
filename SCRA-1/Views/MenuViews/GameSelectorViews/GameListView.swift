@@ -10,6 +10,8 @@ import SwiftUI
 struct GameListView: View {
     
     @ObservedObject var view_model: GameSelectorViewModel
+    @Binding var gameID: String
+    @Binding var menu_state: MenuViewSelector
     
     @State var acceptInviteAlert: Bool = false
     @State var inviteGame: Game? = nil
@@ -41,7 +43,8 @@ struct GameListView: View {
                                 ForEach(self.view_model.games, id: \.self) { game in
                                     
                                     Button(action: {
-                                        
+                                        self.gameID = game.gameID
+                                        self.menu_state = .game
                                     }, label: {
                                         VStack {
                                             Image(systemName: "person.2.circle")
