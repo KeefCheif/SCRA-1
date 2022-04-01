@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PlayerRackView: View {
+struct PlayerRackView2: View {
     
     var geo: GeometryProxy
     @EnvironmentObject var view_model: GameBoardViewModel

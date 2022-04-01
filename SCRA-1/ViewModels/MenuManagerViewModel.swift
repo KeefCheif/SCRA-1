@@ -11,6 +11,10 @@ class MenuManagerViewModel: ObservableObject {
     
     @Published var isLoading: Bool = true
     
-    @Published var menu_model: MenuModel = MenuModel()
+    //@Published var menu_model: MenuModel = MenuModel()    // Has nothing in it rn
+    
+    @Published var state: MenuViewSelector = .menu
+    
+    @Published var gameID: String = ""
     
 }

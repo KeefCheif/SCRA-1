@@ -15,10 +15,12 @@ struct MenuManagerView: View {
     
     var body: some View {
         
-        switch self.menu_view_model.menu_model.view_selector {
+        switch self.menu_view_model.state {  // Maybe fix location of state manager
         case .menu:
-            MenuView(menu_view_manager: self.$menu_view_model.menu_model.view_selector, loggedIn: self.$loggedIn)
+            MenuView(menu_state: self.$menu_view_model.state, gameID: self.$menu_view_model.gameID, loggedIn: self.$loggedIn)
                 .environmentObject(FriendSelectorViewModel())
+        case .game:
+            GameManagerView(view_model: GameViewModel(gameID: self.menu_view_model.gameID), menu_state: self.$menu_view_model.state)
         default:
             Text("default")
         }

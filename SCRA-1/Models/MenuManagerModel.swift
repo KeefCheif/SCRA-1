@@ -9,7 +9,7 @@ import Foundation
 
 struct MenuModel {
     
-    var view_selector: MenuViewSelector = .menu
+    //var view_selector: MenuViewSelector = .menu
     
     //var profile: Profile = Profile()
     

@@ -11,7 +11,8 @@ struct MenuView: View {
     
     @EnvironmentObject var view_model: FriendSelectorViewModel
     
-    @Binding var menu_view_manager: MenuViewSelector
+    @Binding var menu_state: MenuViewSelector
+    @Binding var gameID: String
     @Binding var loggedIn: Bool
     
     @State var expandGame: Bool = false
@@ -24,9 +25,9 @@ struct MenuView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack {
-                MenuTopNav(menu_view_manager: self.$menu_view_manager, loggedIn: self.$loggedIn)
+                MenuTopNav(menu_view_manager: self.$menu_state, loggedIn: self.$loggedIn)
 
-                GameSelectorDropDown(friends: self.$view_model.friends, expand: self.$expandGame)
+                GameSelectorDropDown(friends: self.$view_model.friends, expand: self.$expandGame, gameID: self.$gameID, menu_state: self.$menu_state)
                     .animation(.spring(), value: self.expandFriend)
                 
                 FriendSelectorDropDown(expand: self.$expandFriend)
@@ -47,6 +48,8 @@ struct GameSelectorDropDown: View {
     
     @Binding var friends: [BasicUser]
     @Binding var expand: Bool
+    @Binding var gameID: String
+    @Binding var menu_state: MenuViewSelector
     
     @StateObject var view_model: GameSelectorViewModel = GameSelectorViewModel()
     
@@ -106,7 +109,7 @@ struct GameSelectorDropDown: View {
             }
             
             if (self.expand) {
-                GameSelectorManager(view_model: self.view_model, friends: self.$friends)
+                GameSelectorManager(view_model: self.view_model, friends: self.$friends, gameID: self.$gameID, menu_state: self.$menu_state)
                     .padding(6)
             }
         }
@@ -192,7 +195,7 @@ struct FriendSelectorDropDown: View {
 
 struct MenuView_Previews: PreviewProvider {
     static var previews: some View {
-        MenuView(menu_view_manager: Binding.constant(.menu), loggedIn: Binding.constant(true))
+        MenuView(menu_state: Binding.constant(.menu), gameID: Binding.constant(""), loggedIn: Binding.constant(true))
             .environmentObject(FriendSelectorViewModel())
     }
 }
