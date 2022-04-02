@@ -43,7 +43,7 @@ struct GameTopNaveView: View {
                 Text(self.userScore)
                     .GameSelectorSubText()
                 
-                if self.view_model.isTimer {
+                if self.view_model.isTimer && self.view_model.isPlayerTurn() {
                     
                     Spacer()
                     

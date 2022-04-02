@@ -38,6 +38,8 @@ struct GameManagerView: View {
             
             }
             .padding(4)
+            .onAppear { self.view_model.attatchListener() }
+            .onDisappear { if self.view_model.listener != nil { self.view_model.listener!.remove() } }
         }
     }
 }
@@ -52,12 +54,14 @@ struct GameBottomNavView: View {
             Spacer()
             
             Button(action: {
-                
+                if self.view_model.isPlayerTurn() {
+                    self.view_model.endTurn()
+                }
             }, label: {
                 Text("Submit")
                     .GameSelectorSubText()
                     .padding(6)
-                    .background(Rectangle().foregroundColor(.green).cornerRadius(8).frame(width: self.geo.size.width/4))
+                    .background(Rectangle().foregroundColor(self.view_model.isPlayerTurn() ? .green : .gray).cornerRadius(8).frame(width: self.geo.size.width/4))
             })
             
             Spacer()
