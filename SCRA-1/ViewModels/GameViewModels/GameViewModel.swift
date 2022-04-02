@@ -35,8 +35,14 @@ class GameViewModel: ObservableObject {
     
     var isPlayer1: Bool = false
     
+    private var gameID: String
+    
+    var listener: ListenerRegistration?
+    
     
     init(gameID: String) {
+        
+        self.gameID = gameID
         
         self.getGameInfo(gameID: gameID) { [unowned self] (settings, state, component, error) in
             if let error = error {
@@ -100,6 +106,30 @@ class GameViewModel: ObservableObject {
         
     }
     
+    func isPlayerTurn() -> Bool {
+        
+        guard self.game_state != nil else { return false }
+        
+        if (self.isPlayer1 && self.game_state!.player1Turn) || (!self.isPlayer1 && !self.game_state!.player1Turn)  {
+            return true
+        }
+        return false
+    }
+    
+    
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    //                                 P R I V A T E    D B   F U N C T I O N S
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    
+    
+    
+    /*
+        This function is used by the initializer to retrieve necessary data from the DB such as the game_settings, game_state, and player info
+        The caller of this function must wait until the completion has finished due to the asyncronous nature of the DB read
+        
+        completion return: game_settings, game_state, player_component
+     */
     private func getGameInfo(gameID: String, completion: @escaping (GameSettings?, GameState?, PlayerComponent?, GameError?) -> Void) {
         
         let db = Firestore.firestore()
@@ -142,6 +172,82 @@ class GameViewModel: ObservableObject {
             
         }
         
+    }
+    
+    private func refreshGameState() {
+        
+        self.isLoading = true
+        
+        let db = Firestore.firestore()
+        let docRef = db.collection("games").document(self.gameID)
+        
+        docRef.getDocument { (docSnap, error) in
+            
+            if let error = error {
+                self.error = GameErrorType(error: .propogatedError(error.localizedDescription))
+                self.isLoading = false
+            } else if let docSnap = docSnap {
+                
+                let data = docSnap.data()!
+                
+                let state: [String:Any] = data["gameComponents"]! as! [String:Any]
+                
+                do {
+                    
+                    let jsonState = try JSONSerialization.data(withJSONObject: state)
+                    let decoder = JSONDecoder()
+                    let decodedState = try decoder.decode(GameState.self, from: jsonState)
+                    
+                    self.game_state = decodedState
+                    self.isLoading = false
+                    
+                } catch {
+                    print(error.localizedDescription)
+                    self.error = GameErrorType(error: .getGameInfo)
+                    self.isLoading = false
+                }
+            } else {
+                print("An unexpected error occured while updating the game data.")
+                self.isLoading = false
+            }
+        }
+    
+    }
+    
+    func attatchListener() {
+        
+        let db = Firestore.firestore()
+        let docRef = db.collection("games").document(self.gameID)
+        
+        self.listener = docRef.addSnapshotListener(includeMetadataChanges: false) { (docSnap, error) in
+            
+            if let error = error {
+                print(error.localizedDescription)
+            } else if let docSnap = docSnap {
+                
+                let data = docSnap.data()!
+                // We only care about how the player1 turn flag has changed because if its not player1's turn then it must be player2's turn
+                let components: [String:Any] = data["gameComponents"]! as! [String:Any]
+                let isPlayer1Turn: Bool = components["player1Turn"]! as! Bool
+                
+                // Check to see if this player's turn is over according to the DB
+                if isPlayer1Turn != self.game_state!.player1Turn {
+                    self.refreshGameState()
+                }
+            }
+        }
+    }
+    
+    func endTurn() {
+        
+        let db = Firestore.firestore()
+        let docRef = db.collection("games").document(self.gameID)
+        
+        let updateFlag: Bool = self.isPlayer1 ? false : true
+        
+        docRef.updateData(["gameComponents.player1Turn": updateFlag])
+        
+        return
     }
     
     private func preparePlayerRack() -> [Letter] {

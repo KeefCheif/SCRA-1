@@ -233,17 +233,6 @@ class GameSelectorViewModel: ObservableObject {
         gameDoc.updateData([gameReq.opponentID + ".letters": player2Letters])
         gameDoc.updateData([gameReq.opponentID + ".lastTurn": "idk yet"])
 
-        /*
-        gameDoc.updateData([Auth.auth().currentUser!.uid: [     // Player1 Component
-            "letters": player1Letters,
-            "lastTurn": "idk yet"
-        ]])
-        
-        gameDoc.updateData([gameReq.opponentID: [               // Player2 Component
-            "letters": player2Letters,
-            "lastTurn": "idk yet"
-        ]])
-        */
         // Refresh
         self.refresh()
         
