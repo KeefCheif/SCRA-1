@@ -67,11 +67,15 @@ struct LoginManagerView: View {
                 .sheet(isPresented: self.$login_manager.registerFormShowing, onDismiss: nil) {
                     RegisterForm(registrationFormShowing: self.$login_manager.registerFormShowing)
                 }
-                .alert(item: self.$login_manager.loginError) { (error) in
-                    Alert(title: Text("Login Failed"), message: Text(error.error.localizedDescription), dismissButton: .default(Text("Okay")) {
+                .alert("Login Error", isPresented: .constant(self.login_manager.loginError != nil), actions: {
+                    Button("Okay", role: .cancel, action: {
                         self.login_manager.loginError = nil
                     })
-                }
+                }, message: {
+                    if let loginError = self.login_manager.loginError {
+                        Text(loginError.error.localizedDescription)
+                    }
+                })
                 .onAppear {
                     if Auth.auth().currentUser != nil {
                         self.login_manager.state.loggedIn = true

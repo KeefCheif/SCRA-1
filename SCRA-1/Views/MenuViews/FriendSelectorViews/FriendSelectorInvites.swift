@@ -109,10 +109,8 @@ struct FriendSelectorInvites: View {
             })
             
         }
-        .alert(item: self.$respondAlert) { (request) in
-            Alert(title: Text("Friend Request"), message: Text(request.error.localizedDescription), primaryButton: Alert.Button.default(Text("Yes"), action: {
-                
-                // Make them friends
+        .alert("Friend Request", isPresented: .constant(self.respondAlert != nil), actions: {
+            Button("Yes", role: .cancel, action: {
                 self.acceptFriendReq()
                 
                 self.respondAlert = nil
@@ -120,19 +118,28 @@ struct FriendSelectorInvites: View {
                 
                 self.view_model.refreshAll()
                 self.view_state = .listFriends
-                
-            }), secondaryButton: Alert.Button.cancel(Text("No"), action: {
-                
-                // Remove Friend request
+            })
+            
+            Button("No", role: .destructive, action: {
                 self.rejectFriendReq()
                 
                 self.respondAlert = nil
                 self.respondingTo = ""
                 
                 self.view_model.refreshAll()
-            }))
-        }
-        
+                if let friendReq = self.friendReq, let pendingReq = self.pendingReq  {
+                    if friendReq.isEmpty && pendingReq.isEmpty {
+                        self.view_state = .listFriends
+                    }
+                } else {
+                    self.view_state = .listFriends
+                }
+            })
+        }, message: {
+            if let respondAlert = self.respondAlert {
+                Text(respondAlert.error.localizedDescription)
+            }
+        })
     }
     
     

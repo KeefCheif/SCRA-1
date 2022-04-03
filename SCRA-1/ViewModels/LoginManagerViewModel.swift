@@ -14,6 +14,7 @@ class LoginManagerViewModel: ObservableObject {
     @Published var registerFormShowing: Bool = false
     
     @Published var loginError: LoginErrorType?
+    @Published var isError: Bool = false
     
     //@Published var login_errors:
     
