@@ -74,12 +74,15 @@ struct InviteFriendView: View {
                 Spacer()
             }
         }
-        .alert(item: self.$friendSelctorError) { (error) in
-            Alert(title: Text("Login Failed"), message: Text(error.error.localizedDescription), dismissButton: .default(Text("Okay")) {
+        .alert("Invite Error", isPresented: .constant(self.friendSelctorError != nil), actions: {
+            Button("Okay", role: .cancel, action: {
                 self.friendSelctorError = nil
             })
-        }
-        
+        }, message: {
+            if let invite_error = self.friendSelctorError {
+                Text(invite_error.error.localizedDescription)
+            }
+        })
     }
 
 

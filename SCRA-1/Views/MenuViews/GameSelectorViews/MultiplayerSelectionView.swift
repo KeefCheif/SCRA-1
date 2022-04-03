@@ -67,11 +67,14 @@ struct MultiplayerSelectionView: View {
             })
             
         }
-        .alert(item: self.$error) { (error) in
-            Alert(title: Text(""), message: Text(error.error.localizedDescription), dismissButton: .default(Text("Okay")) {
+        .alert("Game Selection Error", isPresented: .constant(self.error != nil), actions: {
+            Button("Okay", role: .cancel, action: {
                 self.error = nil
             })
-        }
-        
+        }, message: {
+            if let error = error {
+                Text(error.error.localizedDescription)
+            }
+        })
     }
 }

@@ -88,12 +88,15 @@ struct RegisterForm: View {
                     Spacer()
                     
                 }
-                .alert(item: self.$registerError) { (error) in
-                    Alert(title: Text("Register Failed"), message: Text(error.error.localizedDescription), dismissButton: .default(Text("Okay")) {
+                .alert("Registration Failed", isPresented: .constant(self.registerError != nil), actions: {
+                    Button("Okay", role: .cancel, action: {
                         self.registerError = nil
                     })
-                }
-                
+                }, message: {
+                    if let registerError = self.registerError {
+                        Text(registerError.error.localizedDescription)
+                    }
+                })
             }
             
         }
