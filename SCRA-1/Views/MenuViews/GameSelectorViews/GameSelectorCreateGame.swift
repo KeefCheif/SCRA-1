@@ -160,7 +160,7 @@ struct GameSelectorCreateGame: View {
                     
                     let game = db.collection("games").addDocument(data: [
                         "gameSettings": [
-                            "timeRestriction": self.timeSelection,
+                            "timeRestriction": Int(self.timeSelection * 60),
                             "enableChallenges": self.enableChallenges,
                             "freeChallenges": self.freeChallenges,
                             "player1": self.view_model.invitee!.displayUsename,
@@ -169,10 +169,10 @@ struct GameSelectorCreateGame: View {
                             "player2ID": Auth.auth().currentUser!.uid
                         ],
                         self.view_model.invitee!.userID!: [      // Player1 Component
-                            "freeChallenges": self.freeChallenges
+                            "freeChallenges": self.freeChallenges >= 50 ? 100 : self.freeChallenges,
                         ],
                         Auth.auth().currentUser!.uid: [                              // Player2 Component
-                            "freeChallenges": self.freeChallenges
+                            "freeChallenges": self.freeChallenges >= 50 ? 100 : self.freeChallenges,
                         ]
                     ]) { error in
                         if let error = error {

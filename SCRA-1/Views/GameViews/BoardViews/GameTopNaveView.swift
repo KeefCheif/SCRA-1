@@ -12,18 +12,22 @@ struct GameTopNaveView: View {
     @ObservedObject var view_model: GameViewModel
     
     var userScore: String {
+        guard self.view_model.game_state != nil else { return "" }
         return String(self.view_model.isPlayer1 ? self.view_model.game_state!.p1Score : self.view_model.game_state!.p2Score)
     }
     
     var otherUserScore: String {
+        guard self.view_model.game_state != nil else { return "" }
         return String(self.view_model.isPlayer1 ? self.view_model.game_state!.p2Score : self.view_model.game_state!.p1Score)
     }
     
     var username: String {
+        guard self.view_model.game_settings != nil else { return "" }
         return self.view_model.isPlayer1 ? String(self.view_model.game_settings!.player1.prefix(2)) : String(self.view_model.game_settings!.player2.prefix(2))
     }
     
     var otherUsername: String {
+        guard self.view_model.game_settings != nil else { return "" }
         return self.view_model.isPlayer1 ? String(self.view_model.game_settings!.player2.prefix(2)) : String(self.view_model.game_settings!.player1.prefix(2))
     }
     
@@ -67,7 +71,7 @@ struct GameTopNaveView: View {
                     Text("Time Remaining")
                         .selectorMessage()
                     
-                    TimerView(game_model: self.view_model, timer_model: TimerViewModel(total_time_sec: Int(self.view_model.game_settings!.timeRestriction * 60)))
+                    TimerView(game_model: self.view_model, timer_model: TimerViewModel(total_time_sec: self.view_model.game_settings!.timeRestriction))
                         
                 }
                 .padding(4)
@@ -109,7 +113,7 @@ struct TimerView: View {
         .onReceive(timer) { _ in
             if self.timer_model.timerFinished {
                 self.timer.upstream.connect().cancel()  // Stop the Timer
-                // End their turn
+                self.game_model.endTurn(force: true)
             } else {
                 self.timer_model.updateTimer()
             }

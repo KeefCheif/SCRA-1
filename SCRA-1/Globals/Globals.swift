@@ -33,4 +33,21 @@ struct Globals {
     
     static let Letter_Types: [String] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "wild"]
     
+    
+    static func numberToLetter(number: Int) -> String {
+        
+        guard number >= 0 && number <= 25 else { return "wild" }
+        
+        return Globals.Letter_Types[number]
+        
+    }
+
+    static func letterToPointValue(letter: String) -> Int {
+        
+        guard let value = Globals.Letter_Values[letter] else { return 0 }
+        
+        return value
+        
+    }
+    
 }

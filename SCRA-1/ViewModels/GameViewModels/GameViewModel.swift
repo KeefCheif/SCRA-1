@@ -40,6 +40,8 @@ class GameViewModel: ObservableObject {
     
     var listener: ListenerRegistration?
     
+    private var letters_drawn: [String] = [String]()    // For the last turn tracker (only used if they enabled challenges)
+    
     private var gameID: String
     
     
@@ -55,12 +57,17 @@ class GameViewModel: ObservableObject {
                 self.game_settings = settings
                 self.game_state = state
                 self.player_component = component
-                self.player_rack = self.preparePlayerRack()
+                self.player_rack = component.letters.map { Letter(value: Globals.letterToPointValue(letter: $0), letter: $0) }
                 
                 if settings.player1ID == Auth.auth().currentUser!.uid {
                     self.isPlayer1 = true
                 }
                 self.isTimer = settings.timeRestriction > 0 ? true : false
+                
+                if state.turnStarted && component.lostTurn {
+                    self.error = GameErrorType(error: .lostTurn(component.invalidWords!))
+                    self.player_component!.lostTurn = false
+                }
                 
                 self.isLoading = false
             } else {
@@ -70,6 +77,7 @@ class GameViewModel: ObservableObject {
         }
         
     }
+    
     
     func dropTile(location: CGPoint, index: Int) -> Bool {
         
@@ -84,9 +92,9 @@ class GameViewModel: ObservableObject {
                 self.game_state!.board[crawler] = self.player_rack[index].letter
                 
                 // Fix this so there is no: Image not found error
-                self.player_rack[index].letter = "hide"
+                self.player_rack[index].letter = "hidden"
                 
-                self.calculateProjectPoints()
+                self.calculateProjectedPoints()
                 
                 return true
             }
@@ -96,59 +104,238 @@ class GameViewModel: ObservableObject {
         return false
     }
     
-    // Adjusts the point projector for the UI
-    private func calculateProjectPoints() {
+    
+    func recallTiles() {
         
-        guard self.game_state != nil && !self.tile_tracker.placed_tile.isEmpty else { return }
-        
-        var total_points: Int = 0
-        var multiplier: Int = 1
+        guard self.game_state != nil else { return }
         
         for tile in self.tile_tracker.placed_tile {
             
-            switch tile.board_type {
-            case "tw":
-                multiplier = 3
-                if let value = Globals.Letter_Values[tile.letter.letter] {
-                    total_points += value
-                } else { total_points += 0 }
-            case "dw":
-                multiplier = multiplier >= 2 ? multiplier : 2
-                if let value = Globals.Letter_Values[tile.letter.letter] {
-                    total_points += value
-                } else { total_points += 0 }
-            case "tl":
-                if let value = Globals.Letter_Values[tile.letter.letter] {
-                    total_points += 3 * value
-                } else { total_points += 0 }
-            case "dl":
-                if let value = Globals.Letter_Values[tile.letter.letter] {
-                    total_points += 2 * value
-                } else { total_points += 0 }
-            case "center":
-                multiplier = multiplier >= 2 ? multiplier : 2
-                if let value = Globals.Letter_Values[tile.letter.letter] {
-                    total_points += value
-                } else { total_points += 0 }
-            default:
-                if let value = Globals.Letter_Values[tile.letter.letter] {
-                    total_points += value
-                } else { total_points += 0 }
-            }
+            self.player_rack[tile.tile_rack_index].letter = tile.letter.letter
             
+            self.game_state!.board[tile.board_location] = tile.board_type
         }
         
-        total_points *= multiplier
+        self.tile_tracker = TileTracker()
         
-        if self.tile_tracker.placed_tile.count == 7 {
-            total_points += 50
-        }
-        
-        self.tile_tracker.projected_points = total_points
     }
     
     
-    func legalMove() -> Bool {
+    func isPlayerTurn() -> Bool {
+        
+        guard self.game_state != nil else { return false }
+        
+        return (self.isPlayer1 && self.game_state!.player1Turn) || (!self.isPlayer1 && !self.game_state!.player1Turn)
+        
+    }
+    
+    
+    // This function updates the info in the data base so that the other user's listener will pick it up if they are on the app
+    // ~ IMPORTANT ~ The player1Turn flag is what triggers the other user's UI to update, it must be the last thing to update
+    func endTurn(force: Bool) {
+        
+        DispatchQueue.main.async {
+            
+        // - - - - - Pre End Move Work - - - - - //
+            if force {
+                do { try self.connected(checkAll: true) } catch {
+                    self.recallTiles()                      // Their move is over no matter what so remove their tiles and proceed
+                }
+            } else {
+                guard self.legalMove() else { return }      // Their move is not over so just remove their tiles, inform them of the illegal move made, & do NOT proceed
+            }
+            
+            self.drawTiles()                                // Draw new tiles (does nothing if they already have 7)
+            
+            self.isLoading = true                           // Now set the loading flag to true so the UI doesn't update as the view model saves and updates itself
+            
+            let db = Firestore.firestore()
+            let docRef = db.collection("games").document(self.gameID)
+            
+        // - - - - - Player Components - - - - - //
+            docRef.updateData([Auth.auth().currentUser!.uid: [
+                "freeChallenges": self.player_component!.freeChallenges,
+                "letters": self.player_rack.map { $0.letter },
+                "lostTurn": false
+            ]])
+            
+        // - - - - - Last Turn (if challenges are enabled) - - - - - //
+            if self.game_settings!.enableChallenges && !self.letters_drawn.isEmpty {
+                
+                let tiles_placed: [String] = self.tile_tracker.placed_tile.map { $0.letter.letter }
+                
+                docRef.updateData([Auth.auth().currentUser!.uid + ".lastTurn": [
+                    "tilesPlaced": tiles_placed,
+                    "lettersDrawn": self.letters_drawn,
+                    "value": self.tile_tracker.projected_points
+                ]])
+            }
+            
+        // - - - - - Game Components - - - - - //
+            let player1_score = self.isPlayer1 ? self.tile_tracker.projected_points + self.game_state!.p1Score : self.game_state!.p1Score
+            let player2_score = self.isPlayer1 ? self.game_state!.p2Score : self.game_state!.p2Score + self.tile_tracker.projected_points
+            
+            docRef.updateData(["gameComponents": [
+                "board": self.game_state!.board,
+                "letterAmounts": self.game_state!.letterAmounts,
+                "letterTypes": self.game_state!.letterTypes,
+                "player1Turn": !self.isPlayer1,
+                "turnStarted": true,
+                "p1Score": player1_score,
+                "p2Score": player2_score
+            ]])
+            
+            self.refreshGameState()
+            return
+        }
+    }
+    
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    //                                     W O R D    P R O J E C T O R
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    
+    
+    private func isUserPlacedTile(location: Int) -> Bool {
+        
+        guard self.game_state != nil && !self.tile_tracker.placed_tile.isEmpty else { return false }
+        
+        for tile in self.tile_tracker.placed_tile {
+            if tile.board_location == location { return true }
+        }
+        
+        return false
+    }
+    
+    
+    private func calculateProjectedPoints() {
+        
+        guard self.game_state != nil && !self.tile_tracker.placed_tile.isEmpty else { return }
+        
+        do {
+            try self.inLine()
+            try self.joint()
+        } catch {
+            self.tile_tracker.projected_points = 0
+            return
+        }
+        
+        let locations: [Int] = self.tile_tracker.placed_tile.map { $0.board_location }
+        let sorted_locations: [Int] = locations.sorted()
+        let isRow: Bool = locations.first! / 15 == locations.last! / 15
+        
+        let word_indexes: [[Int]] = getWords(locations: sorted_locations, index: 0, isRow: isRow, words_indexes: [[Int]]())
+        
+        for word in word_indexes {
+            for index in word {
+                print(self.game_state!.board[index])
+            }
+            print()
+        }
+        
+        self.tile_tracker.projected_points = getProjectedPoints(words_indexes: word_indexes)
+    }
+    
+    
+    
+    private func getProjectedPoints(words_indexes: [[Int]]) -> Int {
+        
+        guard self.game_state != nil && !self.tile_tracker.placed_tile.isEmpty && !words_indexes.isEmpty else { return 0 }
+        
+        var total_points: Int = 0
+        
+        for word in words_indexes {
+            
+            var word_points: Int = 0
+            var word_multiplier: Int = 1
+            
+            for index in word {
+                
+                if self.isUserPlacedTile(location: index) {
+                    
+                    switch Globals.Default_Board[index] {
+                    case "tw":
+                        word_points += Globals.letterToPointValue(letter: self.game_state!.board[index])
+                        word_multiplier = 3
+                    case "dw":
+                        word_points += Globals.letterToPointValue(letter: self.game_state!.board[index])
+                        word_multiplier = word_multiplier >= 2 ? word_multiplier : 2
+                    case "center":
+                        word_points += Globals.letterToPointValue(letter: self.game_state!.board[index])
+                        word_multiplier = word_multiplier >= 2 ? word_multiplier : 2
+                    case "tl":
+                        word_points += (3 * Globals.letterToPointValue(letter: self.game_state!.board[index]))
+                    case "dl":
+                        word_points += (2 * Globals.letterToPointValue(letter: self.game_state!.board[index]))
+                    default:
+                        word_points += Globals.letterToPointValue(letter: self.game_state!.board[index])
+                    }
+                    
+                } else {
+                    word_points += Globals.letterToPointValue(letter: self.game_state!.board[index])
+                }
+            }
+            total_points += (word_points * word_multiplier)
+        }
+        return self.tile_tracker.placed_tile.count == 7 ? total_points + 50 : total_points
+    }
+    
+    
+    func getWords(locations: [Int], index: Int, isRow: Bool, words_indexes: [[Int]]) -> [[Int]] {
+        
+        if index >= locations.count {
+            return words_indexes
+        } else {
+         
+            var temp_words: [[Int]] = words_indexes
+            
+            if index == 0 {
+                if let mainWord_indexes = self.getBranchingWord(index: locations[index], isRow: !isRow) {
+                    temp_words.append(mainWord_indexes)
+                }
+            }
+            
+            if let branchingWord_indexes = self.getBranchingWord(index: locations[index], isRow: isRow) {
+                temp_words.append(branchingWord_indexes)
+            }
+            
+            return self.getWords(locations: locations, index: index + 1, isRow: isRow, words_indexes: temp_words)
+        }
+    }
+    
+    private func getBranchingWord(index: Int, isRow: Bool) -> [Int]? {
+        
+        var word_indexes: [Int] = [index]
+        
+        let inc_dec: Int = isRow ? 15 : 1
+        var dec_crawler: Int = index - inc_dec
+        var inc_crawler: Int = index + inc_dec
+        
+        while dec_crawler >= 0 || inc_crawler <= 224 {
+            if dec_crawler >= 0 && !self.boardSquareisEmpty(index: dec_crawler) {
+                word_indexes.insert(dec_crawler, at: 0)
+                dec_crawler -= inc_dec
+            } else {
+                dec_crawler = -1
+            }
+            
+            if inc_crawler <= 224 && !self.boardSquareisEmpty(index: inc_crawler) {
+                word_indexes.append(inc_crawler)
+                inc_crawler += inc_dec
+            } else {
+                inc_crawler = 225
+            }
+        }
+        
+        return word_indexes.count > 1 ? word_indexes : nil
+    }
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    //                                     T U R N    V A L I D A T I O N S
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    
+    
+    private func legalMove() -> Bool {
         
         guard !self.tile_tracker.placed_tile.isEmpty else { return true }
         
@@ -173,6 +360,7 @@ class GameViewModel: ObservableObject {
         
     }
     
+    
     private func connected(checkAll: Bool) throws {
         
         if checkAll {
@@ -187,17 +375,17 @@ class GameViewModel: ObservableObject {
         
         guard !self.tile_tracker.placed_tile.isEmpty else { return }
         
-        if self.tile_tracker.placed_tile.count == 1 {
-            guard self.tile_tracker.placed_tile[0].board_location == 112 else { throw IllegalMoveError.disconnected(true) }
-            return
-        }
-        
         let locations: [Int] = self.tile_tracker.placed_tile.map { $0.board_location }
         
-        
-        
+    // - - - - - Check if Word Touches an Existing Letter - - - - - //
         for loc in locations {
             
+            // Check if the word is over the center square and therefore the first move of the game
+            if loc == 112 {
+                return
+            }
+            
+            // Now check if the word touches another letter
             if loc + 1 < 225 && !locations.contains(loc + 1) && self.game_state!.board[loc + 1] != "blank" {
                 return
             }
@@ -216,8 +404,10 @@ class GameViewModel: ObservableObject {
             
         }
         
+        // The word is disconnected if the function did not return yet
         throw IllegalMoveError.disconnected(false)
     }
+    
     
     private func joint() throws {
         
@@ -256,6 +446,7 @@ class GameViewModel: ObservableObject {
         
         return
     }
+    
     
     private func inLine() throws {
         
@@ -299,50 +490,8 @@ class GameViewModel: ObservableObject {
         
         return
     }
-    
-    
-    
-    
-    func recallTiles() {
-        
-        guard !self.tile_tracker.placed_tile.isEmpty && self.game_state != nil else { return }
-        
-        for letter in self.tile_tracker.placed_tile {
-            
-            self.player_rack[letter.tile_rack_index] = letter.letter
-            
-            self.game_state!.board[letter.board_location] = letter.board_type
-        }
-        
-        self.tile_tracker.placed_tile.removeAll()
-        self.tile_tracker.projected_points = 0
-        
-    }
-    
-    func isPlayerTurn() -> Bool {
-        
-        guard self.game_state != nil else { return false }
-        
-        if (self.isPlayer1 && self.game_state!.player1Turn) || (!self.isPlayer1 && !self.game_state!.player1Turn)  {
-            return true
-        }
-        return false
-    }
-    
-    func endTurn() {
-        // This still needs a lot of work
-        
-        let db = Firestore.firestore()
-        let docRef = db.collection("games").document(self.gameID)
-        
-        let updateFlag: Bool = self.isPlayer1 ? false : true
-        
-        docRef.updateData(["gameComponents.player1Turn": updateFlag])
-        
-        return
-    }
-    
-    
+
+
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     //                                 P R I V A T E   H E L P E R   F U N C T I O N S
@@ -368,10 +517,14 @@ class GameViewModel: ObservableObject {
             } else if let docSnap = docSnap {
                 
                 let data = docSnap.data()!
+                var last_turn: [String:Any]?
                 
                 let settings: [String:Any] = data["gameSettings"]! as! [String:Any]
                 let state: [String:Any] = data["gameComponents"]! as! [String:Any]
-                let component: [String: Any] = data[Auth.auth().currentUser!.uid]! as! [String:Any]
+                let component: [String:Any] = data[Auth.auth().currentUser!.uid]! as! [String:Any]
+                if let last_turn_optional: [String:Any] = data[Auth.auth().currentUser!.uid + ".lastTurn"] as? [String:Any] {
+                    last_turn = last_turn_optional
+                }
                 
                 do {
                     
@@ -383,7 +536,13 @@ class GameViewModel: ObservableObject {
                     let decodedState = try decoder.decode(GameState.self, from: jsonState)
                     
                     let jsonComponent = try JSONSerialization.data(withJSONObject: component)
-                    let decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
+                    var decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
+                    
+                    if let last_turn = last_turn {
+                        let jsonLastTurn = try JSONSerialization.data(withJSONObject: last_turn)
+                        let decodedLastTurn = try decoder.decode(LastTurn.self, from: jsonLastTurn)
+                        decodedComponent.lastTurn = decodedLastTurn
+                    }
                     
                     completion(decodedSettings, decodedState, decodedComponent, nil)
                     
@@ -402,43 +561,58 @@ class GameViewModel: ObservableObject {
     
     private func refreshGameState() {
         
-        self.isLoading = true
-        
-        let db = Firestore.firestore()
-        let docRef = db.collection("games").document(self.gameID)
-        
-        docRef.getDocument { (docSnap, error) in
+        DispatchQueue.main.async {
             
-            if let error = error {
-                self.error = GameErrorType(error: .propogatedError(error.localizedDescription))
-                self.isLoading = false
-            } else if let docSnap = docSnap {
+            if !self.isLoading { self.isLoading = true }
+            
+        // - - - - - Zoom Out Board & Reset Tile Tracker - - - - - //
+            self.board_details.zoom = false
+            self.board_details.offset = .zero
+            
+            self.tile_tracker = TileTracker()
+            
+        // - - - - - Update the View Model - - - - - //
+            let db = Firestore.firestore()
+            let docRef = db.collection("games").document(self.gameID)
+            
+            docRef.getDocument { (docSnap, error) in
                 
-                let data = docSnap.data()!
-                
-                let state: [String:Any] = data["gameComponents"]! as! [String:Any]
-                
-                do {
+                if let error = error {
+                    self.error = GameErrorType(error: .propogatedError(error.localizedDescription))
+                } else if let docSnap = docSnap {
                     
-                    let jsonState = try JSONSerialization.data(withJSONObject: state)
-                    let decoder = JSONDecoder()
-                    let decodedState = try decoder.decode(GameState.self, from: jsonState)
+                    let data = docSnap.data()!
                     
-                    self.game_state = decodedState
-                    self.isLoading = false
+                    let state: [String:Any] = data["gameComponents"]! as! [String:Any]
+                    let component: [String:Any] = data[Auth.auth().currentUser!.uid]! as! [String:Any]
                     
-                } catch {
-                    print(error.localizedDescription)
-                    self.error = GameErrorType(error: .getGameInfo)
+                    do {
+                        
+                        let jsonState = try JSONSerialization.data(withJSONObject: state)
+                        let decoder = JSONDecoder()
+                        let decodedState = try decoder.decode(GameState.self, from: jsonState)
+                        
+                        let jsonComponent = try JSONSerialization.data(withJSONObject: component)
+                        let decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
+                        
+                        self.game_state = decodedState
+                        self.player_component = decodedComponent
+                        self.player_rack = decodedComponent.letters.map { Letter(value: Globals.letterToPointValue(letter: $0), letter: $0) }
+                        self.isLoading = false
+                        
+                    } catch {
+                        print(error.localizedDescription)
+                        self.error = GameErrorType(error: .getGameInfo)
+                        self.isLoading = false
+                    }
+                } else {
+                    print("An unexpected error occured while updating the game data.")
                     self.isLoading = false
                 }
-            } else {
-                print("An unexpected error occured while updating the game data.")
-                self.isLoading = false
             }
         }
-    
     }
+    
     
     func attatchListener() {
         
@@ -454,38 +628,24 @@ class GameViewModel: ObservableObject {
                 let data = docSnap.data()!
                 // We only care about how the player1 turn flag has changed because if its not player1's turn then it must be player2's turn
                 let components: [String:Any] = data["gameComponents"]! as! [String:Any]
-                let isPlayer1Turn: Bool = components["player1Turn"]! as! Bool
-                
-                // Check to see if this player's turn is over according to the DB
-                if isPlayer1Turn != self.game_state!.player1Turn {
-                    self.tile_tracker = TileTracker()
-                    self.refreshGameState()
+                if let isPlayer1Turn: Bool = components["player1Turn"] as? Bool {
+                    // Check to see if this player's turn is over according to the DB
+                    if isPlayer1Turn != self.game_state!.player1Turn {
+                        self.refreshGameState()
+                    }
                 }
             }
         }
     }
     
-    private func preparePlayerRack() -> [Letter] {
-        
-        guard self.player_component != nil else { return [Letter]() }
-        
-        var letters: [Letter] = [Letter]()
-        
-        for letter in self.player_component!.letters {
-            letters.append(Letter(value: letterToPointValue(letter: letter), letter: letter))
-        }
-        
-        return letters
-        
-    }
     
     private func prepTimer() -> (Int, Int)? {
         
         guard self.game_settings != nil && self.game_settings!.timeRestriction > 0 else { return nil }
         
-        let total_seconds: Double = self.game_settings!.timeRestriction * 60
-        let only_seconds: Int = Int(total_seconds)%60
-        let only_minutes: Int = Int(total_seconds)/60
+        let total_seconds: Int = self.game_settings!.timeRestriction * 60
+        let only_seconds: Int = total_seconds%60
+        let only_minutes: Int = total_seconds/60
         
         return (only_minutes, only_seconds)
         
@@ -494,27 +654,33 @@ class GameViewModel: ObservableObject {
     
     private func drawTiles() {
         
-        guard self.player_component != nil && self.game_state != nil && self.player_component!.letters.count < 7 else { return }
+        self.player_rack.removeAll(where: { $0.letter == "hidden" })
         
-        let amount_needed: Int = 7 - self.player_component!.letters.count
-        let amount_remaining: Int = self.game_state!.letterAmounts.reduce(0, +)
-        let draw_amount: Int = amount_remaining <= amount_needed ? amount_remaining : amount_needed
+        guard self.player_component != nil && self.game_state != nil && self.player_rack.count < 7 else { return }
         
-        for _ in 0..<draw_amount {
+        
+        
+        let amount_needed: Int = 7 - self.player_rack.count
+        var letters: [String] = [String]()
+        
+        for _ in 0..<amount_needed {
             
-            let rand = Int.random(in: 0..<self.game_state!.letterAmounts.count)
+            let rand = Int.random(in: 0..<self.game_state!.letterTypes.count)
+            let letter = self.game_state!.letterTypes[rand]
             
-            self.player_component!.letters.append(self.game_state!.letterTypes[rand])
+            self.player_rack.append(Letter(value: Globals.letterToPointValue(letter: letter), letter: letter))
+            letters.append(letter)
             
             self.game_state!.letterAmounts[rand] -= 1
             
-            if self.game_state!.letterAmounts[rand] <= 0 {
+            if self.game_state!.letterAmounts[rand] == 0 {
                 self.game_state!.letterTypes.remove(at: rand)
                 self.game_state!.letterAmounts.remove(at: rand)
             }
             
         }
         
+        self.letters_drawn = letters
         return
     }
     
@@ -534,25 +700,13 @@ class GameViewModel: ObservableObject {
 
  
 
-
-
-
-
-
-
-func numberToLetter(number: Int) -> String {
+struct LastTurn: Codable {
     
-    guard number >= 0 && number <= 25 else { return "wild" }
+    var tilesPlaced: [String]
     
-    return String(UnicodeScalar(UInt8(number + 97)))
+    var lettersDrawn: [String]
     
-}
-
-func letterToPointValue(letter: String) -> Int {
-    
-    guard Globals.Letter_Types.contains(letter) else { return 0 }
-    
-    return Globals.Letter_Amounts[Globals.Letter_Types.firstIndex(of: letter)!]
+    var value: Int
     
 }
 
@@ -563,7 +717,11 @@ struct PlayerComponent: Codable {
     
     var freeChallenges: Int
     
-    var lastTurn: String
+    var lostTurn: Bool
+    
+    var lastTurn: LastTurn?
+    
+    var invalidWords: [String]?
 }
 
 
@@ -572,7 +730,7 @@ struct GameSettings: Codable {
     var enableChallenges: Bool
     var freeChallenges: Int
     
-    var timeRestriction: Double
+    var timeRestriction: Int
     
     var player1: String
     var player1ID: String
