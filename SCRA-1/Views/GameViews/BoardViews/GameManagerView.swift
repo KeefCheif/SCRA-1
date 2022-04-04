@@ -44,6 +44,7 @@ struct GameManagerView: View {
     }
 }
 
+
 struct GameBottomNavView: View {
     
     @ObservedObject var view_model: GameViewModel
@@ -54,7 +55,7 @@ struct GameBottomNavView: View {
             Spacer()
             
             Button(action: {
-                if self.view_model.isPlayerTurn() {
+                if self.view_model.isPlayerTurn() && self.view_model.legalMove() {
                     self.view_model.endTurn()
                 }
             }, label: {
@@ -88,5 +89,12 @@ struct GameBottomNavView: View {
             
             Spacer()
         }
+        .alert("Illegal Move", isPresented: .constant(self.view_model.move_error != nil), actions: {
+            Button("Okay", role: .cancel, action: { self.view_model.move_error = nil })
+        }, message: {
+            if let move_error = self.view_model.move_error {
+                Text(move_error.error.localizedDescription)
+            }
+        })
     }
 }
