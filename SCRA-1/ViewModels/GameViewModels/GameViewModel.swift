@@ -8,6 +8,7 @@
 import Foundation
 import Firebase
 import FirebaseAuth
+import SwiftUI
 
 class GameViewModel: ObservableObject {
     
@@ -33,11 +34,13 @@ class GameViewModel: ObservableObject {
     
     @Published var error: GameErrorType?
     
+    @Published var move_error: IllegalMoveErrorType?
+    
     var isPlayer1: Bool = false
     
-    private var gameID: String
-    
     var listener: ListenerRegistration?
+    
+    private var gameID: String
     
     
     init(gameID: String) {
@@ -83,6 +86,8 @@ class GameViewModel: ObservableObject {
                 // Fix this so there is no: Image not found error
                 self.player_rack[index].letter = "hide"
                 
+                self.calculateProjectPoints()
+                
                 return true
             }
             
@@ -90,6 +95,213 @@ class GameViewModel: ObservableObject {
         }
         return false
     }
+    
+    // Adjusts the point projector for the UI
+    private func calculateProjectPoints() {
+        
+        guard self.game_state != nil && !self.tile_tracker.placed_tile.isEmpty else { return }
+        
+        var total_points: Int = 0
+        var multiplier: Int = 1
+        
+        for tile in self.tile_tracker.placed_tile {
+            
+            switch tile.board_type {
+            case "tw":
+                multiplier = 3
+                if let value = Globals.Letter_Values[tile.letter.letter] {
+                    total_points += value
+                } else { total_points += 0 }
+            case "dw":
+                multiplier = multiplier >= 2 ? multiplier : 2
+                if let value = Globals.Letter_Values[tile.letter.letter] {
+                    total_points += value
+                } else { total_points += 0 }
+            case "tl":
+                if let value = Globals.Letter_Values[tile.letter.letter] {
+                    total_points += 3 * value
+                } else { total_points += 0 }
+            case "dl":
+                if let value = Globals.Letter_Values[tile.letter.letter] {
+                    total_points += 2 * value
+                } else { total_points += 0 }
+            case "center":
+                multiplier = multiplier >= 2 ? multiplier : 2
+                if let value = Globals.Letter_Values[tile.letter.letter] {
+                    total_points += value
+                } else { total_points += 0 }
+            default:
+                if let value = Globals.Letter_Values[tile.letter.letter] {
+                    total_points += value
+                } else { total_points += 0 }
+            }
+            
+        }
+        
+        total_points *= multiplier
+        
+        if self.tile_tracker.placed_tile.count == 7 {
+            total_points += 50
+        }
+        
+        self.tile_tracker.projected_points = total_points
+    }
+    
+    
+    func legalMove() -> Bool {
+        
+        guard !self.tile_tracker.placed_tile.isEmpty else { return true }
+        
+        do {
+            try self.connected(checkAll: true)
+            
+        } catch IllegalMoveError.notInLine {
+            self.move_error = IllegalMoveErrorType(error: .notInLine)
+            return false
+        } catch IllegalMoveError.disjoint {
+            self.move_error = IllegalMoveErrorType(error: .disjoint)
+            return false
+        } catch IllegalMoveError.disconnected(let firstTurn) {
+            self.move_error = IllegalMoveErrorType(error: .disconnected(firstTurn))
+            return false
+        } catch {
+            print("An unknown error was thrown while validating the move")
+            return false
+        }
+        
+        return true
+        
+    }
+    
+    private func connected(checkAll: Bool) throws {
+        
+        if checkAll {
+            do {
+                try self.joint()
+            } catch IllegalMoveError.notInLine {
+                throw IllegalMoveError.notInLine
+            } catch {
+                throw IllegalMoveError.disjoint
+            }
+        }
+        
+        guard !self.tile_tracker.placed_tile.isEmpty else { return }
+        
+        if self.tile_tracker.placed_tile.count == 1 {
+            guard self.tile_tracker.placed_tile[0].board_location == 112 else { throw IllegalMoveError.disconnected(true) }
+            return
+        }
+        
+        let locations: [Int] = self.tile_tracker.placed_tile.map { $0.board_location }
+        
+        
+        
+        for loc in locations {
+            
+            if loc + 1 < 225 && !locations.contains(loc + 1) && self.game_state!.board[loc + 1] != "blank" {
+                return
+            }
+            
+            if loc + 15 < 225 && !locations.contains(loc + 15) && self.game_state!.board[loc + 15] != "blank" {
+                return
+            }
+            
+            if loc - 1 >= 0 && !locations.contains(loc - 1) && self.game_state!.board[loc - 1] != "blank" {
+                return
+            }
+            
+            if loc - 15 >= 0 && !locations.contains(loc - 15) && self.game_state!.board[loc - 15] != "blank" {
+                return
+            }
+            
+        }
+        
+        throw IllegalMoveError.disconnected(false)
+    }
+    
+    private func joint() throws {
+        
+        // Make sure that the words are in line before checking if they are disjoint
+        do { try self.inLine() } catch { throw IllegalMoveError.notInLine }
+        
+        guard self.tile_tracker.placed_tile.count > 1 else { return }
+        
+        let locations: [PlacedTile] = self.tile_tracker.placed_tile
+        
+        let row_flag: Bool = (locations[0].board_location / 15) == (locations[1].board_location / 15)
+        
+        var max_location: Int = locations[0].board_location
+        var min_location: Int = locations[0].board_location
+        
+        for i in 1..<locations.count {
+            
+            if locations[i].board_location > max_location {
+                max_location = locations[i].board_location
+            } else if locations[i].board_location < min_location {
+                min_location = locations[i].board_location
+            }
+
+        }
+        
+        let increment: Int = row_flag ? 1 : 15
+        
+        while min_location < max_location {
+            
+            if self.game_state!.board[min_location + increment] == "blank" {
+                throw IllegalMoveError.disjoint
+            }
+            
+            min_location += increment
+        }
+        
+        return
+    }
+    
+    private func inLine() throws {
+        
+        // If there is only 1 placed tile then it is automatically in line
+        guard self.tile_tracker.placed_tile.count > 1 else { return }
+        
+        let locations: [PlacedTile] = self.tile_tracker.placed_tile
+        
+        // First get the row and column of the first two placed tiles to see if either the rows or cols match
+        let row_A = locations[0].board_location / 15
+        let row_B = locations[1].board_location / 15
+        
+        let col_A = locations[0].board_location % 15
+        let col_B = locations[1].board_location % 15
+        
+        // Keep track of how they are in line if at all
+        let row_flag: Bool = row_A == row_B
+        let col_flag: Bool = row_flag ? false : col_A == col_B
+        
+        // Ensure that the first two placed tiles are in line
+        guard row_flag || col_flag else { throw IllegalMoveError.notInLine }
+        
+        // If there are more tiles, then make sure that they are also in line in the same way as the first two
+        if locations.count > 2 {
+            
+            for i in 2..<locations.count {
+                
+                if row_flag {               // The first two are in a horizontal line, so make sure this one is too
+                    
+                    let test_row = locations[i].board_location / 15
+                    if test_row != row_A { throw IllegalMoveError.notInLine }
+                    
+                } else if col_flag {        // The first two are in a verticle line, so make sure this one is too
+                    
+                    let test_col = locations[i].board_location % 15
+                    if test_col != col_A { throw IllegalMoveError.notInLine }
+                    
+                }
+            }
+        }
+        
+        return
+    }
+    
+    
+    
     
     func recallTiles() {
         
@@ -103,6 +315,7 @@ class GameViewModel: ObservableObject {
         }
         
         self.tile_tracker.placed_tile.removeAll()
+        self.tile_tracker.projected_points = 0
         
     }
     
@@ -116,10 +329,23 @@ class GameViewModel: ObservableObject {
         return false
     }
     
+    func endTurn() {
+        // This still needs a lot of work
+        
+        let db = Firestore.firestore()
+        let docRef = db.collection("games").document(self.gameID)
+        
+        let updateFlag: Bool = self.isPlayer1 ? false : true
+        
+        docRef.updateData(["gameComponents.player1Turn": updateFlag])
+        
+        return
+    }
+    
     
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
-    //                                 P R I V A T E    D B   F U N C T I O N S
+    //                                 P R I V A T E   H E L P E R   F U N C T I O N S
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     
     
@@ -232,22 +458,11 @@ class GameViewModel: ObservableObject {
                 
                 // Check to see if this player's turn is over according to the DB
                 if isPlayer1Turn != self.game_state!.player1Turn {
+                    self.tile_tracker = TileTracker()
                     self.refreshGameState()
                 }
             }
         }
-    }
-    
-    func endTurn() {
-        
-        let db = Firestore.firestore()
-        let docRef = db.collection("games").document(self.gameID)
-        
-        let updateFlag: Bool = self.isPlayer1 ? false : true
-        
-        docRef.updateData(["gameComponents.player1Turn": updateFlag])
-        
-        return
     }
     
     private func preparePlayerRack() -> [Letter] {

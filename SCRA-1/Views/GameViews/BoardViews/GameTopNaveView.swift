@@ -29,10 +29,9 @@ struct GameTopNaveView: View {
     
     var body: some View {
         
-        HStack {
-         
+        VStack {
             HStack {
-                
+             
                 Text(self.username)
                     .GameSelectorSubText()
                     .padding(6)
@@ -43,23 +42,12 @@ struct GameTopNaveView: View {
                 Text(self.userScore)
                     .GameSelectorSubText()
                 
-                if self.view_model.isTimer && self.view_model.isPlayerTurn() {
-                    
-                    Spacer()
-                    
-                    VStack {
-                        Text("Time Remaining")
-                            .selectorMessage()
-                        
-                        TimerView(game_model: self.view_model, timer_model: TimerViewModel(total_time_sec: Int(self.view_model.game_settings!.timeRestriction * 60)))
-                            
-                    }
-                    
-                    Spacer()
-                    
-                } else {
-                    Spacer()
+                if !self.view_model.tile_tracker.placed_tile.isEmpty {
+                    Text("+ \(self.view_model.tile_tracker.projected_points)")
+                        .GameSelectorSubText()
                 }
+                
+                Spacer()
                 
                 Text(self.otherUserScore)
                     .GameSelectorSubText()
@@ -71,9 +59,21 @@ struct GameTopNaveView: View {
                     .padding(6)
                     .background(Circle().foregroundColor(.gray))
             }
+            .padding(4)
+            .background(LinearGradient(gradient: Gradient(stops: [Gradient.Stop(color: .blue, location: 0.5), Gradient.Stop(color: .red, location: 0.5)]), startPoint: .leading, endPoint: .trailing).cornerRadius(8))
+            
+            if self.view_model.isTimer && self.view_model.isPlayerTurn() {
+                VStack {
+                    Text("Time Remaining")
+                        .selectorMessage()
+                    
+                    TimerView(game_model: self.view_model, timer_model: TimerViewModel(total_time_sec: Int(self.view_model.game_settings!.timeRestriction * 60)))
+                        
+                }
+                .padding(4)
+                .background(Rectangle().foregroundColor(.gray).cornerRadius(8))
+            }
         }
-        .padding(4)
-        .background(LinearGradient(gradient: Gradient(stops: [Gradient.Stop(color: .blue, location: 0.5), Gradient.Stop(color: .red, location: 0.5)]), startPoint: .leading, endPoint: .trailing).cornerRadius(8))
     }
 }
 

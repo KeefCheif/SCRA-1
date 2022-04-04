@@ -53,6 +53,7 @@
 		D089E3ED27D67EC50075A0C4 /* GameBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3EC27D67EC50075A0C4 /* GameBoardView.swift */; };
 		D089E3EF27D67F260075A0C4 /* PlayerRackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3EE27D67F260075A0C4 /* PlayerRackView.swift */; };
 		D089E3F327D67FC20075A0C4 /* GameBoardModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089E3F227D67FC20075A0C4 /* GameBoardModifiers.swift */; };
+		D096248F27FA4B87009434B1 /* IllegalMoveError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096248E27FA4B87009434B1 /* IllegalMoveError.swift */; };
 		D09B3FB927E8EF7B00DF0BDF /* MenuManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09B3FB827E8EF7B00DF0BDF /* MenuManagerView.swift */; };
 		D09B3FBB27E8F09700DF0BDF /* RegisterForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09B3FBA27E8F09700DF0BDF /* RegisterForm.swift */; };
 		D0D3C0B027DA9ECC0070A008 /* 2LetterWords.json in Resources */ = {isa = PBXBuildFile; fileRef = D0D3C0AF27DA9ECC0070A008 /* 2LetterWords.json */; };
@@ -116,6 +117,7 @@
 		D089E3EC27D67EC50075A0C4 /* GameBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardView.swift; sourceTree = "<group>"; };
 		D089E3EE27D67F260075A0C4 /* PlayerRackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerRackView.swift; sourceTree = "<group>"; };
 		D089E3F227D67FC20075A0C4 /* GameBoardModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardModifiers.swift; sourceTree = "<group>"; };
+		D096248E27FA4B87009434B1 /* IllegalMoveError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IllegalMoveError.swift; sourceTree = "<group>"; };
 		D09B3FB827E8EF7B00DF0BDF /* MenuManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuManagerView.swift; sourceTree = "<group>"; };
 		D09B3FBA27E8F09700DF0BDF /* RegisterForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterForm.swift; sourceTree = "<group>"; };
 		D0D3C0AF27DA9ECC0070A008 /* 2LetterWords.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = 2LetterWords.json; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 				D07B46FC27EE6521004B7635 /* FriendSelectorError.swift */,
 				D057038627F2303100BD50DC /* GameSelectorError.swift */,
 				D057039227F6344C00BD50DC /* GameError.swift */,
+				D096248E27FA4B87009434B1 /* IllegalMoveError.swift */,
 			);
 			path = Errors;
 			sourceTree = "<group>";
@@ -535,6 +538,7 @@
 				D00291F5278419390045231C /* SCRA_1App.swift in Sources */,
 				D020C81227ED097400BC41D0 /* GameSelectorModifiers.swift in Sources */,
 				D057038727F2303100BD50DC /* GameSelectorError.swift in Sources */,
+				D096248F27FA4B87009434B1 /* IllegalMoveError.swift in Sources */,
 				D057039327F6344C00BD50DC /* GameError.swift in Sources */,
 				D0759AFF27EFCBC9000B0540 /* InviteFriendView.swift in Sources */,
 				D09B3FB927E8EF7B00DF0BDF /* MenuManagerView.swift in Sources */,

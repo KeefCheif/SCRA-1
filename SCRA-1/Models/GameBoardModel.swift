@@ -69,11 +69,7 @@ struct TileTracker {
     
     var placed_tile: [PlacedTile] = [PlacedTile]()
     
-    var direction: WordDirection = WordDirection.na
-    
-    enum WordDirection {
-        case horizontal, vertical, na
-    }
+    var projected_points: Int = 0
     
 }
 
