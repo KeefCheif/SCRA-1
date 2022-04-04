@@ -40,6 +40,14 @@ struct GameManagerView: View {
             .padding(4)
             .onAppear { self.view_model.attatchListener() }
             .onDisappear { if self.view_model.listener != nil { self.view_model.listener!.remove() } }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
+                
+                if self.view_model.isTimer && self.view_model.isPlayerTurn() { self.view_model.endTurn(force: true) }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                if self.view_model.isTimer && self.view_model.isPlayerTurn() { self.view_model.endTurn(force: true) }
+            }
+            
         }
     }
 }
@@ -55,9 +63,7 @@ struct GameBottomNavView: View {
             Spacer()
             
             Button(action: {
-                if self.view_model.isPlayerTurn() && self.view_model.legalMove() {
-                    self.view_model.endTurn()
-                }
+                if self.view_model.isPlayerTurn() { self.view_model.endTurn(force: false) }
             }, label: {
                 Text("Submit")
                     .GameSelectorSubText()
@@ -89,11 +95,16 @@ struct GameBottomNavView: View {
             
             Spacer()
         }
-        .alert("Illegal Move", isPresented: .constant(self.view_model.move_error != nil), actions: {
-            Button("Okay", role: .cancel, action: { self.view_model.move_error = nil })
+        .alert("Illegal Move", isPresented: .constant((self.view_model.move_error != nil || self.view_model.error != nil)), actions: {
+            Button("Okay", role: .cancel, action: {
+                self.view_model.move_error = nil
+                self.view_model.error = nil
+            })
         }, message: {
             if let move_error = self.view_model.move_error {
                 Text(move_error.error.localizedDescription)
+            } else if let error = self.view_model.error {
+                Text(error.error.localizedDescription)
             }
         })
     }

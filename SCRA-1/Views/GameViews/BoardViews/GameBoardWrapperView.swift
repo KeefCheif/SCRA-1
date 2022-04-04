@@ -7,22 +7,6 @@
 
 import SwiftUI
 
-struct GameBoardWrapperView: View {
-    
-    @ObservedObject var view_model: GameViewModel
-    
-    var body: some View {
-        
-        VStack {
-            
-            GameBoardView(view_model: self.view_model)
-            
-            //PlayerRackView(view_model: self.view_model)
-            
-        }
-    }
-}
-
 struct GameBoardView: View {
     
     @ObservedObject var view_model: GameViewModel
@@ -69,13 +53,12 @@ struct PlayerRackView: View {
     var body: some View {
         
         HStack {
-            
-            ForEach(0..<self.view_model.player_rack.count) { index in
-                
-                Image(self.view_model.player_rack[index].letter)
+            ForEach(Array(zip(self.view_model.player_rack.indices, self.view_model.player_rack)), id: \.0) { index, item in
+            //ForEach(0..<self.view_model.player_rack.count) { index in
+                Image(item.letter)
                     .resizable()
                     .scaledToFit()
-                    .offset(self.view_model.player_rack[index].offset)
+                    .offset(item.offset)
                     
                     .gesture(DragGesture(coordinateSpace: .named("board_rack")).onChanged { drag in
                         self.view_model.player_rack[index].offset = drag.translation

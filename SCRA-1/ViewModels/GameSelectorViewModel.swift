@@ -219,19 +219,17 @@ class GameSelectorViewModel: ObservableObject {
             "board": Globals.Default_Board,
             "letterAmounts": letter_amounts,
             "letterTypes": letter_types,
-            "startofGame": true,
             "player1Turn": true,
             "turnStarted": false,
             "p1Score": 0,
             "p2Score": 0
-            // Still need p1 & p2 letters, last turn, &
         ]], merge: true)
         
         gameDoc.updateData([Auth.auth().currentUser!.uid + ".letters": player1Letters])
-        gameDoc.updateData([Auth.auth().currentUser!.uid + ".lastTurn": "idk yet"])
+        gameDoc.updateData([Auth.auth().currentUser!.uid + ".lostTurn": false])
         
         gameDoc.updateData([gameReq.opponentID + ".letters": player2Letters])
-        gameDoc.updateData([gameReq.opponentID + ".lastTurn": "idk yet"])
+        gameDoc.updateData([gameReq.opponentID + ".lostTurn": false])
 
         // Refresh
         self.refresh()

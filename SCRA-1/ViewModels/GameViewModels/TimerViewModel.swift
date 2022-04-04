@@ -46,13 +46,13 @@ class TimerViewModel: ObservableObject {
                 
                 if self.min_ones == 0 {
                     
-                    if self.min_tens <= 1 {
+                    if self.min_tens == 0 {
                         
                         self.timerFinished = true
                         
                     } else {
                         self.min_tens -= 1
-                        self.sec_ones = 9
+                        self.min_ones = 9
                         self.sec_tens = 5
                         self.sec_ones = 9
                     }
