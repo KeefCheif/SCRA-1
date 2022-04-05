@@ -22,6 +22,8 @@ class GameViewModel: ObservableObject {
     
     @Published var  player_component: PlayerComponent?
     
+    @Published var last_turn: LastTurn?
+    
 // - - - - - - - - - - Values for the View - - - - - - - - - - //
     
     @Published var board_details: BoardDetails = BoardDetails()
@@ -36,6 +38,10 @@ class GameViewModel: ObservableObject {
     
     @Published var move_error: IllegalMoveErrorType?
     
+    @Published var challenge_alert: GameErrorType?
+    
+    var challengeWords: [String] = [String]()
+    
     var isPlayer1: Bool = false
     
     var listener: ListenerRegistration?
@@ -43,6 +49,8 @@ class GameViewModel: ObservableObject {
     private var letters_drawn: [String] = [String]()    // For the last turn tracker (only used if they enabled challenges)
     
     private var gameID: String
+    
+    private var challenge_result: Bool?                 // Only used upon initialization if the user closed & opened the app after seeing the results of their challenge attempt
     
     
     init(gameID: String) {
@@ -64,10 +72,13 @@ class GameViewModel: ObservableObject {
                 }
                 self.isTimer = settings.timeRestriction > 0 ? true : false
                 
+                // For informing them of their lost turn
                 if state.turnStarted && component.lostTurn {
-                    self.error = GameErrorType(error: .lostTurn(component.invalidWords!))
-                    self.player_component!.lostTurn = false
+                    //self.error = GameErrorType(error: .lostTurn(component.invalidWords!))
+                    //self.player_component!.lostTurn = false
                 }
+                
+                self.handleGameClosedReoponed()
                 
                 self.isLoading = false
             } else {
@@ -75,7 +86,24 @@ class GameViewModel: ObservableObject {
                 self.isLoading = false
             }
         }
+    }
+    
+    
+    func handleGameClosedReoponed() {
         
+        guard self.isPlayerTurn() else { return }
+        
+        if let challenge_result = self.challenge_result {
+            
+            self.challengeAction(challenge_successful: challenge_result, useFreeChallenge: false, forceEndTurn: self.isTimer)
+            
+        } else if self.isTimer && self.game_state!.turnStarted {
+            
+            self.endTurn(force: true)
+            
+        } else if self.isTimer {
+            Firestore.firestore().collection("games").document(self.gameID).updateData(["gameComponents.turnStarted": true])
+        }
     }
     
     
@@ -147,7 +175,7 @@ class GameViewModel: ObservableObject {
             
             self.drawTiles()                                // Draw new tiles (does nothing if they already have 7)
             
-            self.isLoading = true                           // Now set the loading flag to true so the UI doesn't update as the view model saves and updates itself
+            if !self.isLoading { self.isLoading = true }    // Now set the loading flag to true so the UI doesn't update as the view model saves and updates itself
             
             let db = Firestore.firestore()
             let docRef = db.collection("games").document(self.gameID)
@@ -160,16 +188,28 @@ class GameViewModel: ObservableObject {
             ]])
             
         // - - - - - Last Turn (if challenges are enabled) - - - - - //
-            if self.game_settings!.enableChallenges && !self.letters_drawn.isEmpty {
+            if self.game_settings!.enableChallenges {
                 
-                let tiles_placed: [String] = self.tile_tracker.placed_tile.map { $0.letter.letter }
-                
-                docRef.updateData([Auth.auth().currentUser!.uid + ".lastTurn": [
-                    "tilesPlaced": tiles_placed,
-                    "lettersDrawn": self.letters_drawn,
-                    "value": self.tile_tracker.projected_points
-                ]])
+                if self.letters_drawn.isEmpty {
+                    
+                    docRef.updateData(["lastTurn": FieldValue.delete()])
+                    
+                } else {
+                 
+                    let tiles_location: [Int] = self.tile_tracker.placed_tile.map { $0.board_location }
+                    
+                    docRef.setData(["lastTurn": [
+                        "tilesPlaced": tiles_location,
+                        "lettersDrawn": self.letters_drawn,
+                        "value": self.tile_tracker.projected_points
+                    ]], merge: true)
+                }
             }
+            
+        // - - - - - Reset Stuff - - - - - //
+            self.letters_drawn = [String]()
+            self.challengeWords = [String]()
+            self.last_turn = nil
             
         // - - - - - Game Components - - - - - //
             let player1_score = self.isPlayer1 ? self.tile_tracker.projected_points + self.game_state!.p1Score : self.game_state!.p1Score
@@ -177,8 +217,7 @@ class GameViewModel: ObservableObject {
             
             docRef.updateData(["gameComponents": [
                 "board": self.game_state!.board,
-                "letterAmounts": self.game_state!.letterAmounts,
-                "letterTypes": self.game_state!.letterTypes,
+                "letters": self.game_state!.letters,
                 "player1Turn": !self.isPlayer1,
                 "turnStarted": true,
                 "p1Score": player1_score,
@@ -225,13 +264,6 @@ class GameViewModel: ObservableObject {
         let isRow: Bool = locations.first! / 15 == locations.last! / 15
         
         let word_indexes: [[Int]] = getWords(locations: sorted_locations, index: 0, isRow: isRow, words_indexes: [[Int]]())
-        
-        for word in word_indexes {
-            for index in word {
-                print(self.game_state!.board[index])
-            }
-            print()
-        }
         
         self.tile_tracker.projected_points = getProjectedPoints(words_indexes: word_indexes)
     }
@@ -490,7 +522,203 @@ class GameViewModel: ObservableObject {
         
         return
     }
-
+    
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    //                                          C H A L L E N G E S
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    
+    
+    // Called by the UI after the challenge words have been showed to the user and they have decided to challenge
+    // Returns true if the challenge was successful and false if not
+    func challenge() {
+        
+        self.isLoading = true   // Prevents the user from pushing any buttons while the challenge is going
+        
+        guard !self.challengeWords.isEmpty else { return }
+        
+        var invalid_words: [String] = [String]()
+    
+        for word in self.challengeWords {
+            if !self.checkWord(word: word) {
+                invalid_words.append(word)
+            }
+        }
+        
+        let db = Firestore.firestore()
+        let gameDoc = db.collection("games").document(self.gameID)
+        
+        gameDoc.setData(["challengeResult": !invalid_words.isEmpty], merge: true)   // false = user lost challenge
+        
+        self.challenge_alert = GameErrorType(error: invalid_words.isEmpty ? .lostChallenge : .wonChallenge(invalid_words))
+        self.isLoading = false
+    }
+    
+    
+    func challengeAction(challenge_successful: Bool, useFreeChallenge: Bool, forceEndTurn: Bool) {
+        
+        self.isLoading = true
+        
+        let db = Firestore.firestore()
+        let gameDoc = db.collection("games").document(self.gameID)
+        
+        if challenge_successful {
+            
+            // Undo the last turn
+            gameDoc.updateData(["lastTurn": FieldValue.delete()])
+            
+            // Remove the points the opponent got from their last turn
+            let player1_score = self.isPlayer1 ? self.game_state!.p1Score : self.game_state!.p1Score - self.last_turn!.value
+            let player2_score = self.isPlayer1 ? self.game_state!.p2Score - self.last_turn!.value : self.game_state!.p2Score
+            
+            // Get the opponents tiles from the DB so they can be updated
+            self.getOpponentLetters { [unowned self] (opponent_letters, opponent_id) in
+                
+                if let opponent_letters = opponent_letters, let opponent_id = opponent_id {
+                    var new_opponent_letters: [String] = opponent_letters
+                    
+                    // Remove the letters they drew last turn and put them back in the letter bag
+                    for letter in self.last_turn!.lettersDrawn {
+                        new_opponent_letters.remove(at: new_opponent_letters.firstIndex(of: letter)!)
+                        self.game_state!.letters.append(letter)
+                    }
+                    
+                    // Give them their old letters back and remove them from the board
+                    for letter_location in self.last_turn!.tilesPlaced {
+                        new_opponent_letters.append(self.game_state!.board[letter_location])
+                        self.game_state!.board[letter_location] = Globals.Default_Board[letter_location]
+                    }
+                    
+                    // Save the changes made to the opoonent's component
+                    gameDoc.updateData(["\(opponent_id).letters": new_opponent_letters])
+                    gameDoc.updateData(["\(opponent_id).lostTurn": true])
+                    
+                    // Save the changes made to the gameState
+                    gameDoc.updateData(["gameComponents": [
+                        "board": self.game_state!.board,
+                        "letters": self.game_state!.letters,
+                        "player1Turn": self.isPlayer1,              // Do not change this value since it is still the current user's turn after this
+                        "turnStarted": false,
+                        "p1Score": player1_score,
+                        "p2Score": player2_score
+                    ]])
+                    
+                    // Remove the challenge result flag since the result has been handled
+                    gameDoc.updateData(["challengeResult": FieldValue.delete()])
+                    
+                    
+                    if forceEndTurn {
+                        self.endTurn(force: true)
+                    } else {
+                        self.last_turn = nil
+                        self.challengeWords = [String]()
+                        self.refreshGameState()
+                    }
+                }
+            }
+            
+        } else {
+            
+            gameDoc.updateData(["challengeResult": FieldValue.delete()])
+            
+            if useFreeChallenge && self.player_component!.freeChallenges > 0 {
+                self.player_component!.freeChallenges -= 1
+                // Immediatly save the loss of a free challenge in the DB in case the user closes the app after they see the result of the Challenge and use a free challenge
+                gameDoc.updateData(["\(Auth.auth().currentUser!.uid).freeChallenges": self.player_component!.freeChallenges])
+                self.isLoading = false
+            } else {
+                self.endTurn(force: true)
+            }
+        }
+    }
+    
+    
+    // Gets all of the words played by the opponnent last turn so that they can be displayed to the user before they decide to challenge anything
+    func getChallenegeWords() {
+        
+        guard self.last_turn != nil && self.game_settings != nil && self.game_settings!.enableChallenges else { return }
+        
+        guard self.isPlayerTurn() else { return }
+        
+        guard !self.last_turn!.tilesPlaced.isEmpty else { return }
+        
+        self.recallTiles()
+        
+        // Need to find all the words created by the letters placed by the user
+        let locations: [Int] = self.last_turn!.tilesPlaced
+        let sorted_locations: [Int] = locations.sorted()
+        let isRow: Bool = sorted_locations.first! / 15 == sorted_locations.last! / 15
+        
+        let indexed_words: [[Int]] = self.getWords(locations: sorted_locations, index: 0, isRow: isRow, words_indexes: [[Int]]())
+        
+        var words: [String] = [String]()
+        
+        for indexed_word in indexed_words {
+            
+            var word: String = ""
+            
+            for index in indexed_word {
+                if !self.boardSquareisEmpty(index: index) {
+                    word += self.game_state!.board[index]
+                }
+            }
+            words.append(word)
+        }
+        self.challengeWords = words
+    }
+    
+    
+    private func checkWord(word: String) -> Bool {
+        
+        guard word.count > 1 else { return false }
+        
+        guard word.count < 8 else { return true } // 8 letter words or more not handled yet
+        
+        guard let dictionary_file = Bundle.main.url(forResource: "\(word.count)LetterWords", withExtension: "json") else { return false }
+        
+        do {
+            let data = try Data(contentsOf: dictionary_file)
+            let dictionary: [GameWords] =  try JSONDecoder().decode([GameWords].self, from: data)
+            
+            for gameWord in dictionary {
+                if gameWord.word == word {
+                    return true
+                }
+            }
+                
+        } catch {
+            return false
+        }
+        return false
+    }
+    
+    
+    private func getOpponentLetters(completion: @escaping ([String]?, String?) -> Void) {
+        let db = Firestore.firestore()
+        let gameDoc = db.collection("games").document(self.gameID)
+        
+        gameDoc.getDocument { (docSnap, error) in
+            
+            if let docSnap = docSnap {
+                let data = docSnap.data()!
+                let opponent_id: String = self.isPlayer1 ? self.game_settings!.player2ID : self.game_settings!.player1ID
+                
+                let player2Component: [String:Any] = data[opponent_id]! as! [String:Any]
+                
+                do {
+                    let jsonComponent = try JSONSerialization.data(withJSONObject: player2Component)
+                    let decodedComponent = try JSONDecoder().decode(PlayerComponent.self, from: jsonComponent)
+                    completion(decodedComponent.letters, opponent_id)
+                } catch {
+                    completion(nil, nil)
+                }
+                
+            } else {
+                print("FUCK")
+                completion(nil, nil)
+            }
+        }
+    }
 
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -517,13 +745,16 @@ class GameViewModel: ObservableObject {
             } else if let docSnap = docSnap {
                 
                 let data = docSnap.data()!
-                var last_turn: [String:Any]?
+                var lastTurn: [String:Any]?
                 
                 let settings: [String:Any] = data["gameSettings"]! as! [String:Any]
                 let state: [String:Any] = data["gameComponents"]! as! [String:Any]
                 let component: [String:Any] = data[Auth.auth().currentUser!.uid]! as! [String:Any]
-                if let last_turn_optional: [String:Any] = data[Auth.auth().currentUser!.uid + ".lastTurn"] as? [String:Any] {
-                    last_turn = last_turn_optional
+                self.challenge_result = data["challengeResult"] as? Bool
+                
+                
+                if let last_turn_optional: [String:Any] = data["lastTurn"] as? [String:Any] {
+                    lastTurn = last_turn_optional
                 }
                 
                 do {
@@ -536,12 +767,12 @@ class GameViewModel: ObservableObject {
                     let decodedState = try decoder.decode(GameState.self, from: jsonState)
                     
                     let jsonComponent = try JSONSerialization.data(withJSONObject: component)
-                    var decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
+                    let decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
                     
-                    if let last_turn = last_turn {
-                        let jsonLastTurn = try JSONSerialization.data(withJSONObject: last_turn)
+                    if let lastTurn = lastTurn {
+                        let jsonLastTurn = try JSONSerialization.data(withJSONObject: lastTurn)
                         let decodedLastTurn = try decoder.decode(LastTurn.self, from: jsonLastTurn)
-                        decodedComponent.lastTurn = decodedLastTurn
+                        self.last_turn = decodedLastTurn
                     }
                     
                     completion(decodedSettings, decodedState, decodedComponent, nil)
@@ -561,54 +792,64 @@ class GameViewModel: ObservableObject {
     
     private func refreshGameState() {
         
-        DispatchQueue.main.async {
+        if !self.isLoading { self.isLoading = true }
+        
+    // - - - - - Zoom Out Board & Reset Tile Tracker - - - - - //
+        self.board_details.zoom = false
+        self.board_details.offset = .zero
+        
+        self.tile_tracker = TileTracker()
+        
+    // - - - - - Update the View Model - - - - - //
+        let db = Firestore.firestore()
+        let docRef = db.collection("games").document(self.gameID)
+        
+        docRef.getDocument { (docSnap, error) in
             
-            if !self.isLoading { self.isLoading = true }
-            
-        // - - - - - Zoom Out Board & Reset Tile Tracker - - - - - //
-            self.board_details.zoom = false
-            self.board_details.offset = .zero
-            
-            self.tile_tracker = TileTracker()
-            
-        // - - - - - Update the View Model - - - - - //
-            let db = Firestore.firestore()
-            let docRef = db.collection("games").document(self.gameID)
-            
-            docRef.getDocument { (docSnap, error) in
+            if let error = error {
+                self.error = GameErrorType(error: .propogatedError(error.localizedDescription))
+            } else if let docSnap = docSnap {
                 
-                if let error = error {
-                    self.error = GameErrorType(error: .propogatedError(error.localizedDescription))
-                } else if let docSnap = docSnap {
+                let data = docSnap.data()!
+                var lastTurn: [String:Any]?
+                
+                let state: [String:Any] = data["gameComponents"]! as! [String:Any]
+                let component: [String:Any] = data[Auth.auth().currentUser!.uid]! as! [String:Any]
+                self.challenge_result = data["challengeResult"] as? Bool
+                if let last_turn_option: [String:Any] = data["lastTurn"] as? [String:Any] {
+                    lastTurn = last_turn_option
+                }
+                
+                do {
                     
-                    let data = docSnap.data()!
+                    let jsonState = try JSONSerialization.data(withJSONObject: state)
+                    let decoder = JSONDecoder()
+                    let decodedState = try decoder.decode(GameState.self, from: jsonState)
                     
-                    let state: [String:Any] = data["gameComponents"]! as! [String:Any]
-                    let component: [String:Any] = data[Auth.auth().currentUser!.uid]! as! [String:Any]
+                    let jsonComponent = try JSONSerialization.data(withJSONObject: component)
+                    let decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
                     
-                    do {
-                        
-                        let jsonState = try JSONSerialization.data(withJSONObject: state)
-                        let decoder = JSONDecoder()
-                        let decodedState = try decoder.decode(GameState.self, from: jsonState)
-                        
-                        let jsonComponent = try JSONSerialization.data(withJSONObject: component)
-                        let decodedComponent = try decoder.decode(PlayerComponent.self, from: jsonComponent)
-                        
-                        self.game_state = decodedState
-                        self.player_component = decodedComponent
-                        self.player_rack = decodedComponent.letters.map { Letter(value: Globals.letterToPointValue(letter: $0), letter: $0) }
-                        self.isLoading = false
-                        
-                    } catch {
-                        print(error.localizedDescription)
-                        self.error = GameErrorType(error: .getGameInfo)
-                        self.isLoading = false
+                    if let lastTurn = lastTurn {
+                        let jsonLastTurn = try JSONSerialization.data(withJSONObject: lastTurn)
+                        let decodedLastTurn = try decoder.decode(LastTurn.self, from: jsonLastTurn)
+                        self.last_turn = decodedLastTurn
+                    } else {
+                        self.last_turn = nil
                     }
-                } else {
-                    print("An unexpected error occured while updating the game data.")
+                    
+                    self.game_state = decodedState
+                    self.player_component = decodedComponent
+                    self.player_rack = decodedComponent.letters.map { Letter(value: Globals.letterToPointValue(letter: $0), letter: $0) }
+                    self.isLoading = false
+                    
+                } catch {
+                    print(error.localizedDescription)
+                    self.error = GameErrorType(error: .getGameInfo)
                     self.isLoading = false
                 }
+            } else {
+                print("An unexpected error occured while updating the game data.")
+                self.isLoading = false
             }
         }
     }
@@ -639,50 +880,31 @@ class GameViewModel: ObservableObject {
     }
     
     
-    private func prepTimer() -> (Int, Int)? {
-        
-        guard self.game_settings != nil && self.game_settings!.timeRestriction > 0 else { return nil }
-        
-        let total_seconds: Int = self.game_settings!.timeRestriction * 60
-        let only_seconds: Int = total_seconds%60
-        let only_minutes: Int = total_seconds/60
-        
-        return (only_minutes, only_seconds)
-        
-    }
-    
-    
     private func drawTiles() {
         
         self.player_rack.removeAll(where: { $0.letter == "hidden" })
         
         guard self.player_component != nil && self.game_state != nil && self.player_rack.count < 7 else { return }
         
-        
-        
         let amount_needed: Int = 7 - self.player_rack.count
         var letters: [String] = [String]()
         
         for _ in 0..<amount_needed {
             
-            let rand = Int.random(in: 0..<self.game_state!.letterTypes.count)
-            let letter = self.game_state!.letterTypes[rand]
+            let rand = Int.random(in: 0..<self.game_state!.letters.count)
+            let letter = self.game_state!.letters[rand]
             
             self.player_rack.append(Letter(value: Globals.letterToPointValue(letter: letter), letter: letter))
             letters.append(letter)
             
-            self.game_state!.letterAmounts[rand] -= 1
-            
-            if self.game_state!.letterAmounts[rand] == 0 {
-                self.game_state!.letterTypes.remove(at: rand)
-                self.game_state!.letterAmounts.remove(at: rand)
-            }
+            self.game_state!.letters.remove(at: rand)
             
         }
         
         self.letters_drawn = letters
         return
     }
+    
     
     private func boardSquareisEmpty(index: Int) -> Bool {
         
@@ -702,7 +924,7 @@ class GameViewModel: ObservableObject {
 
 struct LastTurn: Codable {
     
-    var tilesPlaced: [String]
+    var tilesPlaced: [Int]          // Where the letters were placed on the board
     
     var lettersDrawn: [String]
     
@@ -718,8 +940,6 @@ struct PlayerComponent: Codable {
     var freeChallenges: Int
     
     var lostTurn: Bool
-    
-    var lastTurn: LastTurn?
     
     var invalidWords: [String]?
 }
@@ -744,8 +964,7 @@ struct GameState: Codable {
     
     var board: [String]
     
-    var letterAmounts: [Int]
-    var letterTypes: [String]
+    var letters: [String]
     
     var p1Score: Int
     var p2Score: Int
@@ -755,4 +974,7 @@ struct GameState: Codable {
     
 }
 
-
+struct GameWords: Codable {
+    
+    var word: String
+}

@@ -160,7 +160,7 @@ struct GameSelectorCreateGame: View {
                     
                     let game = db.collection("games").addDocument(data: [
                         "gameSettings": [
-                            "timeRestriction": Int(self.timeSelection * 60),
+                            "timeRestriction": self.enableTimeRestriction ? Int(self.timeSelection * 60) : 0,
                             "enableChallenges": self.enableChallenges,
                             "freeChallenges": self.freeChallenges,
                             "player1": self.view_model.invitee!.displayUsename,

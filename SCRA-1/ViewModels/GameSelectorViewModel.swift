@@ -178,47 +178,32 @@ class GameSelectorViewModel: ObservableObject {
         ]])])
         
         // Create data for the game: Board & Letter Bag
-        var letter_amounts: [Int] = Globals.Letter_Amounts
-        var letter_types: [String] = Globals.Letter_Types
+        var letters: [String] = Globals.Letter_Bag
         var player1Letters: [String] = [String]()
         var player2Letters: [String] = [String]()
         
-        // - - - Deal Player 1 Letters - - - //
         for _ in 0..<7 {
             
-            let rand: Int = Int.random(in: 0..<letter_amounts.count)
+            let rand = Int.random(in: 0..<letters.count)
             
-            player1Letters.append(letter_types[rand])
+            player1Letters.append(letters[rand])
             
-            letter_amounts[rand] -= 1
-            
-            if letter_amounts[rand] <= 0 {
-                letter_types.remove(at: rand)
-                letter_amounts.remove(at: rand)
-            }
+            letters.remove(at: rand)
         }
         
-        // - - - Deal Player 2 Letters - - - //
         for _ in 0..<7 {
             
-            let rand: Int = Int.random(in: 0..<letter_amounts.count)
+            let rand = Int.random(in: 0..<letters.count)
             
-            player2Letters.append(letter_types[rand])
+            player2Letters.append(letters[rand])
             
-            letter_amounts[rand] -= 1
-            
-            // If there are 0 of that letter remaining then remove it from both arrays
-            if letter_amounts[rand] <= 0 {
-                letter_types.remove(at: rand)
-                letter_amounts.remove(at: rand)
-            }
+            letters.remove(at: rand)
         }
         
         // Add necessary Data to the game
         gameDoc.setData(["gameComponents" : [
             "board": Globals.Default_Board,
-            "letterAmounts": letter_amounts,
-            "letterTypes": letter_types,
+            "letters": letters,
             "player1Turn": true,
             "turnStarted": false,
             "p1Score": 0,
