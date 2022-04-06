@@ -96,16 +96,14 @@ struct GameSelectorDropDown: View {
                 Spacer()
                 
                 Button(action: {
-                    // Create refresh function
+                    self.view_model.refresh()
                 }, label: {
                     Image(systemName: "arrow.clockwise.circle")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 25)
                         .foregroundColor(.white)
-                    
                 })
-                
             }
             
             if (self.expand) {
