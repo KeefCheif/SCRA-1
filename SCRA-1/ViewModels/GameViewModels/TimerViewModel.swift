@@ -23,6 +23,8 @@ class TimerViewModel: ObservableObject {
     
     @Published var total_time_sec: Int = 0
     
+    private var timer: Timer!
+    
     init(total_time_sec: Int) {
         
         self.total_time_sec = total_time_sec
@@ -36,6 +38,16 @@ class TimerViewModel: ObservableObject {
         self.sec_tens = seconds/10
         self.sec_ones = seconds%10
         
+        var runner: (() -> ())?
+        runner = {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                if let self = self {
+                    self.updateTimer()
+                    runner?()
+                }
+            }
+        }
+        runner?()
     }
     
     func updateTimer() {
