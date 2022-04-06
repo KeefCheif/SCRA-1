@@ -86,8 +86,6 @@ struct TimerView: View {
     @ObservedObject var game_model: GameViewModel
     @StateObject var timer_model: TimerViewModel
     
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
     var body: some View {
         
         HStack(spacing: 1) {
@@ -110,12 +108,9 @@ struct TimerView: View {
             Spacer()
             
         }
-        .onReceive(timer) { _ in
+        .onChange(of: self.timer_model.timerFinished) { _ in
             if self.timer_model.timerFinished {
-                self.timer.upstream.connect().cancel()  // Stop the Timer
                 self.game_model.endTurn(force: true)
-            } else {
-                self.timer_model.updateTimer()
             }
         }
     }
