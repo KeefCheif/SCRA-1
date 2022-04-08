@@ -40,7 +40,7 @@ class TimerViewModel: ObservableObject {
         
         var runner: (() -> ())?
         runner = {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                 if let self = self {
                     self.updateTimer()
                     runner?()
