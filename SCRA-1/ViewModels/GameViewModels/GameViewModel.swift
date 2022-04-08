@@ -34,23 +34,29 @@ class GameViewModel: ObservableObject {
     
     @Published var isTimer: Bool = false
     
-    @Published var error: GameErrorType?
+// - - - - - - - - - - Values for Alerts & Errors - - - - - - - - - - - //
     
     @Published var move_error: IllegalMoveErrorType?
     
-    @Published var challenge_alert: GameErrorType?
+    @Published var game_alert: GameAlertType?
+    
+    @Published var challenge_alert: ChallengeAlertType?
+    
+// - - - - - - - - - - Values for Challenges - - - - - - - - - - //
     
     var challengeWords: [String] = [String]()
     
+    private var challenge_result: Bool?                 // Only used upon initialization if the user closed & opened the app after seeing the results of their challenge attempt
+    
+// - - - - - - - - - - General Values for Game State - - - - - - - - - - //
+    
     var isPlayer1: Bool = false
     
-    var listener: ListenerRegistration?
+    var listener: ListenerRegistration?                 // Initialized upon the view appearing; automatically updates the view when the other player finishes their turn
     
     private var letters_drawn: [String] = [String]()    // For the last turn tracker (only used if they enabled challenges)
     
     private var gameID: String
-    
-    private var challenge_result: Bool?                 // Only used upon initialization if the user closed & opened the app after seeing the results of their challenge attempt
     
     
     init(gameID: String) {
@@ -59,7 +65,7 @@ class GameViewModel: ObservableObject {
         
         self.getGameInfo(gameID: gameID) { [unowned self] (settings, state, component, error) in
             if let error = error {
-                self.error = GameErrorType(error: error)
+                self.game_alert = GameAlertType(error: error)
                 self.isLoading = false
             } else if let settings = settings, let state = state, let component = component {
                 self.game_settings = settings
@@ -82,7 +88,7 @@ class GameViewModel: ObservableObject {
                 
                 self.isLoading = false
             } else {
-                self.error = GameErrorType(error: .getGameInfo)
+                self.game_alert = GameAlertType(error: .errorGettingGame)
                 self.isLoading = false
             }
         }
@@ -219,7 +225,7 @@ class GameViewModel: ObservableObject {
                 "board": self.game_state!.board,
                 "letters": self.game_state!.letters,
                 "player1Turn": !self.isPlayer1,
-                "turnStarted": true,
+                "turnStarted": false,
                 "p1Score": player1_score,
                 "p2Score": player2_score
             ]])
@@ -418,19 +424,19 @@ class GameViewModel: ObservableObject {
             }
             
             // Now check if the word touches another letter
-            if loc + 1 < 225 && !locations.contains(loc + 1) && self.game_state!.board[loc + 1] != "blank" {
+            if loc + 1 < 225 && !locations.contains(loc + 1) && !self.boardSquareisEmpty(index: loc + 1) {
                 return
             }
             
-            if loc + 15 < 225 && !locations.contains(loc + 15) && self.game_state!.board[loc + 15] != "blank" {
+            if loc + 15 < 225 && !locations.contains(loc + 15) && !self.boardSquareisEmpty(index: loc + 15) {
                 return
             }
             
-            if loc - 1 >= 0 && !locations.contains(loc - 1) && self.game_state!.board[loc - 1] != "blank" {
+            if loc - 1 >= 0 && !locations.contains(loc - 1) && !self.boardSquareisEmpty(index: loc - 1) {
                 return
             }
             
-            if loc - 15 >= 0 && !locations.contains(loc - 15) && self.game_state!.board[loc - 15] != "blank" {
+            if loc - 15 >= 0 && !locations.contains(loc - 15) && !self.boardSquareisEmpty(index: loc - 15) {
                 return
             }
             
@@ -550,7 +556,7 @@ class GameViewModel: ObservableObject {
         
         gameDoc.setData(["challengeResult": !invalid_words.isEmpty], merge: true)   // false = user lost challenge
         
-        self.challenge_alert = GameErrorType(error: invalid_words.isEmpty ? .lostChallenge : .wonChallenge(invalid_words))
+        self.challenge_alert = ChallengeAlertType(error: invalid_words.isEmpty ? .lostChallenge : .wonChallenge(invalid_words))
         self.isLoading = false
     }
     
@@ -733,7 +739,7 @@ class GameViewModel: ObservableObject {
         
         completion return: game_settings, game_state, player_component
      */
-    private func getGameInfo(gameID: String, completion: @escaping (GameSettings?, GameState?, PlayerComponent?, GameError?) -> Void) {
+    private func getGameInfo(gameID: String, completion: @escaping (GameSettings?, GameState?, PlayerComponent?, GameAlert?) -> Void) {
         
         let db = Firestore.firestore()
         let gameDoc = db.collection("games").document(gameID)
@@ -741,7 +747,7 @@ class GameViewModel: ObservableObject {
         gameDoc.getDocument { (docSnap, error) in
             
             if let _ = error {
-                completion(nil, nil, nil, .getGameInfo)
+                completion(nil, nil, nil, .errorGettingGame)
             } else if let docSnap = docSnap {
                 
                 let data = docSnap.data()!
@@ -778,12 +784,11 @@ class GameViewModel: ObservableObject {
                     completion(decodedSettings, decodedState, decodedComponent, nil)
                     
                 } catch {
-                    print(error.localizedDescription)
-                    completion(nil, nil, nil, .getGameInfo)
+                    completion(nil, nil, nil, .errorGettingGame)
                 }
                 
             } else {
-                completion(nil, nil, nil, .getGameInfo)
+                completion(nil, nil, nil, .errorGettingGame)
             }
             
         }
@@ -806,8 +811,8 @@ class GameViewModel: ObservableObject {
         
         docRef.getDocument { (docSnap, error) in
             
-            if let error = error {
-                self.error = GameErrorType(error: .propogatedError(error.localizedDescription))
+            if let _ = error {
+                self.game_alert = GameAlertType(error: .errorGettingGame)
             } else if let docSnap = docSnap {
                 
                 let data = docSnap.data()!
@@ -843,12 +848,11 @@ class GameViewModel: ObservableObject {
                     self.isLoading = false
                     
                 } catch {
-                    print(error.localizedDescription)
-                    self.error = GameErrorType(error: .getGameInfo)
+                    self.game_alert = GameAlertType(error: .errorGettingGame)
                     self.isLoading = false
                 }
             } else {
-                print("An unexpected error occured while updating the game data.")
+                self.game_alert = GameAlertType(error: .errorGettingGame)
                 self.isLoading = false
             }
         }
