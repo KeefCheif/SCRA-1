@@ -10,7 +10,6 @@ import SwiftUI
 struct GameBoardView: View {
     
     @ObservedObject var view_model: GameViewModel
-    //var geo: GeometryProxy
     
     var body: some View {
         

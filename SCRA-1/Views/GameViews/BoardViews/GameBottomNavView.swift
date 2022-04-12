@@ -22,7 +22,14 @@ struct GameBottomNavView: View {
             
             Spacer()
             
+            DisplayGameInfo(view_model: self.view_model)
+            
             Button(action: {
+                
+                if self.view_model.game_over != nil {
+                    self.view_model.deleteUserGameRef()
+                }
+                
                 self.menu_state = .menu
             }, label: {
                 Text("Exit")
@@ -188,5 +195,29 @@ struct GameSubmitRecallView: View {
                 Text(move_error.error.localizedDescription)
             }
         })
+    }
+}
+
+struct DisplayGameInfo: View {
+    
+    @ObservedObject var view_model: GameViewModel
+    
+    private var freeChallengesRemaining: Int {
+        return self.view_model.player_component!.freeChallenges
+    }
+    
+    var body: some View {
+        
+        HStack {
+            
+            if self.view_model.game_settings!.enableChallenges {
+                Text("Free Challenges Remaining: \(self.freeChallengesRemaining)")
+                    .GameSelectorSubText()
+            }
+            
+            Text("Letters Remaining: \(self.view_model.game_state!.letters.count)")
+                .GameSelectorSubText()
+        }
+        
     }
 }

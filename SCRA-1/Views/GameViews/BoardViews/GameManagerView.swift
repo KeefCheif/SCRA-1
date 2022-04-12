@@ -20,20 +20,31 @@ struct GameManagerView: View {
             
             VStack {
                 
-                GameTopNaveView(view_model: self.view_model)
-                
-                GeometryReader { board_geo in
-                    VStack {
-                        GameBoardView(view_model: self.view_model)
-                            .modifier(BoardModifier(geo: board_geo, board_details: self.$view_model.board_details))
-                            .frame(width: board_geo.size.width, height: board_geo.size.width)
-                        
-                        PlayerRackView(view_model: self.view_model, geo: board_geo)
-                            .frame(width: board_geo.size.width, height: board_geo.size.width/6)
-                        
-                        GameBottomNavView(view_model: self.view_model, menu_state: self.$menu_state, geo: board_geo)
+                if self.view_model.game_over == nil {
+                    GameTopNaveView(view_model: self.view_model)
+                    
+                    GeometryReader { board_geo in
+                        VStack {
+                            GameBoardView(view_model: self.view_model)
+                                .modifier(BoardModifier(geo: board_geo, board_details: self.$view_model.board_details))
+                                .frame(width: board_geo.size.width, height: board_geo.size.width)
+                            
+                            PlayerRackView(view_model: self.view_model, geo: board_geo)
+                                .frame(width: board_geo.size.width, height: board_geo.size.width/6)
+                            
+                            GameBottomNavView(view_model: self.view_model, menu_state: self.$menu_state, geo: board_geo)
+                        }
+                        .coordinateSpace(name: "board_rack")
                     }
-                    .coordinateSpace(name: "board_rack")
+                } else {
+                    Button(action: {
+                        if self.view_model.game_over != nil {
+                            self.view_model.deleteUserGameRef()
+                        }
+                        self.menu_state = .menu
+                    }, label: {
+                        Text("Exit")
+                    })
                 }
             
             }
@@ -59,9 +70,14 @@ struct GameManagerView: View {
                             // Prepare game to be deleted when they exit
                         })
                     case .gameOver:
-                        Button("Okay", role: .cancel, action: {
+                        Button("View Game", role: .cancel, action: {
                             self.view_model.game_alert = nil
-                            // Prepare game to be deleted when they exit only if the other person has already exited
+                            // Do nothing else, game will be deleted when they exit
+                        })
+                        Button("Exit", role: .destructive, action: {
+                            self.view_model.game_alert = nil
+                            self.view_model.deleteUserGameRef()
+                            self.menu_state = .menu
                         })
                     case .errorGettingGame:
                         Button("Exit", role: .cancel, action: {
@@ -76,7 +92,9 @@ struct GameManagerView: View {
                     }
                 }
             }, message: {
-                
+                if let alert = self.view_model.game_alert {
+                    Text(alert.error.localizedDescription)
+                }
             })
         }
     }
