@@ -207,7 +207,8 @@ class GameSelectorViewModel: ObservableObject {
             "player1Turn": true,
             "turnStarted": false,
             "p1Score": 0,
-            "p2Score": 0
+            "p2Score": 0,
+            "gameOver": false
         ]], merge: true)
         
         gameDoc.updateData([Auth.auth().currentUser!.uid + ".letters": player1Letters])
